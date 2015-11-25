@@ -15,3 +15,6 @@ Implementation of StereoLab's ZED camera for openFrameworks
   &lt;ZED_SDK_DIR&gt;<i>D:\Program Files (x86)\ZED SDK</i>&lt;/ZED_SDK_DIR&gt;
 <br />
   &lt;CUDA_DIR&gt;<i>D:\Program Files\NVidia\Cuda 7.0</i&>lt;/CUDA_DIR&gt;
+
+#Credits
+Put together for openFrameworks by <a href="http://designandsystems.de">Desgin & Systems</a> / <a href="http://www.stefanwagner.io">Stefan Wagner (andsynchrony)</a> 
