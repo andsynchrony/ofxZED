@@ -131,7 +131,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;sl_zed64.lib;glu32.lib;opengl32.lib;freeglut.lib;D:\Program Files (x86)\ZED SDK\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_highgui249.lib;D:\Program Files (x86)\ZED SDK\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_imgproc249.lib;D:\Program Files (x86)\ZED SDK\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_core249.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;sl_zed64.lib;glu32.lib;opengl32.lib;freeglut.lib;$(ZED_SDK_DIR)\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_highgui249.lib;$(ZED_SDK_DIR)\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_imgproc249.lib;$(ZED_SDK_DIR)\dependencies\opencv_2.4.9\x64\vc11\lib\opencv_core249.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ZED_SDK_DIR)/lib;$(ZED_SDK_DIR)/lib/$(Configuration);$(ZED_SDK_DIR)/dependencies/freeglut_2.8/$(Platform);$(ZED_SDK_DIR)/dependencies/freeglut_2.8/$(Platform)/$(Configuration);$(ZED_SDK_DIR)/dependencies/glew-1.12.0/$(Platform)/$(Configuration);$(ZED_SDK_DIR)/dependencies/glew-1.12.0/$(Platform);$(ZED_SDK_DIR)/dependencies/opencv_2.4.9/$(Platform)/vc11/lib;$(ZED_SDK_DIR)/dependencies/opencv_2.4.9/$(Platform)/vc11/lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
