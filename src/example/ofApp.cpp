@@ -3,13 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	zed.init(true, true);
+	zed.init(true, true, 0, sl::zed::PERFORMANCE, sl::zed::VGA);
+	//zed.init();
 }
 
 //--------------------------------------------------------------
 void ofApp::update()
 {
 	zed.update();
+	ofLog() << "FPS: " << zed.getCurrentFPS() << endl;
 }
 
 //--------------------------------------------------------------
