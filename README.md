@@ -18,3 +18,5 @@ Implementation of StereoLab's ZED camera for openFrameworks
 
 #Credits
 Put together for openFrameworks by <a href="http://designandsystems.de">Design & Systems</a> / <a href="http://www.stefanwagner.io">Stefan Wagner (andsynchrony)</a> 
+
+Some functionalities extended by <a href="http://mithru.com/"> Mithru Vigneshwara</a>.
