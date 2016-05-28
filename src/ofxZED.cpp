@@ -59,11 +59,11 @@ void ofxZED::update()
 {
 	if (bUseDepthImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::FULL, true, true);
+		zed->grab(sl::zed::SENSING_MODE::RAW, true, true);
 	}
 	else if(bUseColorImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::RAW, false, false);
+		zed->grab(sl::zed::SENSING_MODE::FULL, false, false);
 	}
 
 	if(bUseColorImage)
@@ -95,6 +95,29 @@ void ofxZED::fillColorBuffer()
 		}
 	}
 	
+}
+
+
+int ofxZED::getDepthAtPoint(int x, int y) {
+	try {
+
+		cv::Mat depthMap(zedHeight, zedWidth, CV_32F);
+
+		slMat2cvMat(zed->retrieveMeasure(sl::zed::MEASURE::DEPTH)).copyTo(depthMap);
+
+		if (x >= 0 && y >= 0 && x < zedWidth && y < zedHeight) 
+		{
+			return depthMap.at<float>(y, x);
+		}
+		else
+		{
+			ofLog(OF_LOG_ERROR) << "ERROR: Out of Bounds. Image resolution is " << zedWidth << ", " << zedHeight << ". Pick a point within the frame." << std::endl;
+			return -1;
+		}
+	}
+	catch (int e) {
+		ofLog(OF_LOG_ERROR) << "Could not get depth at point. Error: " << e << std::endl;
+	}
 }
 
 void ofxZED::fillDepthBuffer()
