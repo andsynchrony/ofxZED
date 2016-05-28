@@ -1,25 +1,24 @@
 #include "ofxZED.h"
 
-
-
 ofxZED::ofxZED()
 {
 }
-
 
 ofxZED::~ofxZED()
 {
 }
 
-
-void ofxZED::init(bool useColorImage, bool useDepthImage)
+void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::zed::MODE mode, sl::zed::ZEDResolution_mode resolution, float fps)
 {
 	bUseColorImage = useColorImage;
 	bUseDepthImage = useDepthImage;
+
 	ofLog() << "Initializing ZED camera." << std::endl;
 
-	zed = new sl::zed::Camera(sl::zed::HD720);
-	sl::zed::ERRCODE zederr = zed->init(sl::zed::MODE::PERFORMANCE, 0, false, false, false);
+	zed = new sl::zed::Camera(resolution, fps);
+	ofLog() << "Resolution Mode:" << resolution << std::endl;
+
+	sl::zed::ERRCODE zederr = zed->init(mode, cameraID, true, false, false);
 
 	if (zederr != sl::zed::SUCCESS)
 	{
@@ -29,10 +28,14 @@ void ofxZED::init(bool useColorImage, bool useDepthImage)
 	else
 	{
 		ofLog() << "ZED initialized." << endl;
+
 	}
 
 	zedWidth = zed->getImageSize().width;
 	zedHeight = zed->getImageSize().height;
+
+	ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
+	ofLog() << "FPS: " << getCurrentFPS() << endl;
 
 	colorBuffer = new uchar[zedWidth * zedHeight * 3];
 	depthBuffer = new uchar[zedWidth * zedHeight];
@@ -44,6 +47,11 @@ void ofxZED::init(bool useColorImage, bool useDepthImage)
 ofVec2f ofxZED::getImageDimensions()
 {
 	return ofVec2f(zedWidth, zedHeight);
+}
+
+float ofxZED::getCurrentFPS() 
+{
+	return zed->getCurrentFPS();
 }
 
 
@@ -92,7 +100,6 @@ void ofxZED::fillColorBuffer()
 void ofxZED::fillDepthBuffer()
 {
 	sl::zed::Mat zedView = zed->normalizeMeasure(sl::zed::MEASURE::DEPTH);
-	ofLog() << zedView.width << " // " << zedView.height << endl;
 	for (int y = 0; y < zedHeight; y++)
 	{
 		for (int x = 0; x < zedWidth; x++)
