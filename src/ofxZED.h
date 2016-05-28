@@ -22,6 +22,8 @@ public:
 
 	float getCurrentFPS();
 
+	int getDepthAtPoint(int x, int y);
+
 private:
 	void fillColorBuffer();
 	void fillDepthBuffer();
