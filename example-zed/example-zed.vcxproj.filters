@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxZED\src\ofxZED.cpp">
+			<Filter>addons\ofxZED\src</Filter>
+		</ClCompile>
+	</ItemGroup>
+	<ItemGroup>
+		<Filter Include="src">
+			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons">
+			<UniqueIdentifier>{71834F65-F3A9-211E-73B8-DC85}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED">
+			<UniqueIdentifier>{6068A7D6-93FE-693C-D4F7-A68B}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\src">
+			<UniqueIdentifier>{73DFAEC2-B674-1327-779A-3A18}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs">
+			<UniqueIdentifier>{9D8D5EB0-70FC-BD6B-8A9F-318F}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED">
+			<UniqueIdentifier>{0E7A03EA-5A38-221D-0833-E9B9}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include">
+			<UniqueIdentifier>{6C5231B4-1A37-260F-99E5-1995}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include\sl">
+			<UniqueIdentifier>{BD492871-01AD-EB0B-0BB0-EF1B}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core">
+			<UniqueIdentifier>{56C9DABD-B19E-5D79-E103-F034}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core\mapping">
+			<UniqueIdentifier>{C64EEEE4-33F4-66A2-7E38-8C9A}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core\utils">
+			<UniqueIdentifier>{11A22ECC-B057-C00E-BE2B-E9FE}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxZED\libs\ZED\include\sl_zed">
+			<UniqueIdentifier>{AA89F54A-AF2B-6022-E630-9A92}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\src\ofxZED.h">
+			<Filter>addons\ofxZED\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Camera.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Core.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\defines.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Mesh.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\types.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping\Mesh.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl_core\mapping</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\Core.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl_core\utils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\types.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl_core\utils</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\Camera.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl_zed</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\defines.hpp">
+			<Filter>addons\ofxZED\libs\ZED\include\sl_zed</Filter>
+		</ClInclude>
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="icon.rc" />
+	</ItemGroup>
+</Project>

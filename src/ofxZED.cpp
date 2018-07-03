@@ -6,23 +6,34 @@ ofxZED::ofxZED()
 
 ofxZED::~ofxZED()
 {
+	close();
 }
 
-void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::zed::MODE mode, sl::zed::ZEDResolution_mode resolution, float fps)
+void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::DEPTH_MODE mode, sl::RESOLUTION resolution, float fps)
 {
+	// Set configuration parameters
+	sl::InitParameters init_params;
+	init_params.camera_resolution = resolution;
+	init_params.camera_fps = fps;
+	init_params.depth_mode = mode;
+	init_params.enable_right_side_measure = true;
+	init_params.input.setFromCameraID(cameraID);
+	init_params.coordinate_units = sl::UNIT_METER;
+
+
 	bUseColorImage = useColorImage;
 	bUseDepthImage = useDepthImage;
 
 	ofLog() << "Initializing ZED camera." << std::endl;
 
-	zed = new sl::zed::Camera(resolution, fps);
+	zed = new sl::Camera();
 	ofLog() << "Resolution Mode:" << resolution << std::endl;
 
-	sl::zed::ERRCODE zederr = zed->init(mode, cameraID, true, false, false);
+	sl::ERROR_CODE zederr = zed->open(init_params);
 
-	if (zederr != sl::zed::SUCCESS)
+	if (zederr != sl::SUCCESS)
 	{
-		ofLog() << "ERROR: " << sl::zed::errcode2str(zederr) << endl;
+		ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
 		ofExit();
 	}
 	else
@@ -31,17 +42,24 @@ void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::zed:
 
 	}
 
-	zedWidth = zed->getImageSize().width;
-	zedHeight = zed->getImageSize().height;
+	zedWidth = zed->getResolution().width;
+	zedHeight = zed->getResolution().height;
 
 	ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
 	ofLog() << "FPS: " << getCurrentFPS() << endl;
 
-	colorBuffer = new uchar[zedWidth * zedHeight * 3];
-	depthBuffer = new uchar[zedWidth * zedHeight];
+	colorLeftTexture.allocate(zedWidth, zedHeight, GL_RGBA);
+	colorRightTexture.allocate(zedWidth, zedHeight, GL_RGBA);
+	depthLeftTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE32F_ARB);
+	depthRightTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE32F_ARB);
+}
 
-	colorTexture.allocate(zedWidth, zedHeight, GL_RGB, false);
-	depthTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE, false);
+void ofxZED::close()
+{
+	if (zed) {
+		zed->close();
+		zed = nullptr;
+	}
 }
 
 ofVec2f ofxZED::getImageDimensions()
@@ -59,110 +77,58 @@ void ofxZED::update()
 {
 	if (bUseDepthImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::RAW, true, true);
+		sl::RuntimeParameters rt;
+		rt.enable_depth = true;
+		rt.sensing_mode = sl::SENSING_MODE::SENSING_MODE_FILL;
+		auto ret = zed->grab(rt);
+		if (ret != sl::SUCCESS) {
+			ofLogError() << sl::errorCode2str(ret).c_str() << endl;
+		}
 	}
 	else if(bUseColorImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::FULL, false, false);
-	}
-
-	if(bUseColorImage)
-		colorTexture.loadData(getColorBuffer(), zedWidth, zedHeight, GL_RGB);
-
-	if(bUseDepthImage)
-	depthTexture.loadData(getDepthBuffer(), zedWidth, zedHeight, GL_LUMINANCE);
-}
-
-void ofxZED::fillColorBuffer()
-{
-	sl::zed::Mat zedView = zed->retrieveImage(sl::zed::SIDE::LEFT);
-	/*
-	// wrong color / pixel format, unfunctional for now.
-	memcpy(imageBuffer, zedView.data, zedWidth * zedHeight * 3 * sizeof(sl::uchar));
-	// instead using:
-	*/
-	for (int y = 0; y < zedHeight; y++)
-	{
-		for (int x = 0; x < zedWidth; x++)
-		{
-			sl::uchar3 pixel = zedView.getValue(x, y);
-			int index = 3 * (x + y * zedWidth);
-
-			colorBuffer[index + 0] = pixel.c3;
-			colorBuffer[index + 1] = pixel.c2;
-			colorBuffer[index + 2] = pixel.c1;
-			
+		sl::RuntimeParameters rt;
+		rt.enable_depth = false;
+		auto ret = zed->grab(rt);
+		if (ret != sl::SUCCESS) {
+			ofLogError() << sl::errorCode2str(ret).c_str() << endl;
 		}
 	}
-	
-}
 
-
-int ofxZED::getDepthAtPoint(int x, int y) {
-	try {
-
-		cv::Mat depthMap(zedHeight, zedWidth, CV_32F);
-
-		slMat2cvMat(zed->retrieveMeasure(sl::zed::MEASURE::DEPTH)).copyTo(depthMap);
-
-		if (x >= 0 && y >= 0 && x < zedWidth && y < zedHeight) 
+	if (bUseColorImage) {
 		{
-			return depthMap.at<float>(y, x);
+			auto ret = zed->retrieveImage(this->cl, sl::VIEW_LEFT);
+			if (ret == sl::SUCCESS) {
+				colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+			}
 		}
-		else
 		{
-			ofLog(OF_LOG_ERROR) << "ERROR: Out of Bounds. Image resolution is " << zedWidth << ", " << zedHeight << ". Pick a point within the frame." << std::endl;
-			return -1;
+			auto ret = zed->retrieveImage(this->cr, sl::VIEW_RIGHT);
+			if (ret == sl::SUCCESS) {
+				colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+			}
 		}
 	}
-	catch (int e) {
-		ofLog(OF_LOG_ERROR) << "Could not get depth at point. Error: " << e << std::endl;
-	}
-}
 
-void ofxZED::fillDepthBuffer()
-{
-	sl::zed::Mat zedView = zed->normalizeMeasure(sl::zed::MEASURE::DEPTH);
-	for (int y = 0; y < zedHeight; y++)
-	{
-		for (int x = 0; x < zedWidth; x++)
+	if (bUseDepthImage) {
 		{
-			sl::uchar3 pixel = zedView.getValue(x, y);
-			
-			int index = (x + y * zedWidth);
-			depthBuffer[index] = pixel.c1;
+			auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE_DEPTH);
+			if (ret == sl::SUCCESS) {
+				depthLeftTexture.loadData(this->dl.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
+			}
+			else {
+				ofLogError() << sl::errorCode2str(ret).c_str() << endl;
+			}
+		}
+		{
+			auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE_DEPTH_RIGHT);
+			if (ret == sl::SUCCESS) {
+				depthRightTexture.loadData(this->dr.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
+			}
+			else {
+				ofLogError() << sl::errorCode2str(ret).c_str() << endl;
+			}
 		}
 	}
 }
 
-uchar * ofxZED::getColorBuffer()
-{
-	if (!bUseColorImage)
-		ofLogWarning() << "trying to access color buffer without setting useColorImage to true." << endl;
-	else
-		fillColorBuffer();
-	return colorBuffer;
-}
-
-uchar * ofxZED::getDepthBuffer()
-{
-	if (!bUseDepthImage)
-		ofLogWarning() << "trying to access depth buffer without setting useDepthImage to true." << endl;
-	else
-		fillDepthBuffer();
-	return depthBuffer;
-}
-
-ofTexture * ofxZED::getColorTexture()
-{
-	if (!bUseColorImage)
-		ofLogWarning() << "trying to access color buffer without setting useColorImage to true." << endl;
-	return &colorTexture;
-}
-
-ofTexture * ofxZED::getDepthTexture()
-{
-	if (!bUseDepthImage)
-		ofLogWarning() << "trying to access depth buffer without setting useDepthImage to true." << endl;
-	return &depthTexture;
-}
