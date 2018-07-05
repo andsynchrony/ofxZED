@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
-//#include <zed/Camera.hpp>
 #include "ofxZED.h"
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -22,8 +22,10 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-		ofxZED zed;
+		ofxZED::Camera zed;
 
 		ofShader depthShader;
 		ofShader colorShader;
+
+		ofEasyCam cam;
 };

@@ -34,7 +34,7 @@ void main()
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	zed.init(true, true, 0);
+	zed.init(true, true, true, 0);
 
 	depthShader.setupShaderFromSource(GL_FRAGMENT_SHADER, depthFragmentShader);
 	depthShader.linkProgram();
@@ -63,7 +63,25 @@ void ofApp::draw()
 	zed.getDepthRightTexture().draw(zed.zedWidth, zed.zedHeight);
 	depthShader.end();
 
+	cam.begin();
+	ofPushMatrix();
+	ofScale(100, 100, 100);
+	ofMultMatrix(zed.getTrackedPose());
+	ofDrawAxis(0.3);
+	ofDrawBox(0.1);
+	ofPopMatrix();
+
+	ofDrawAxis(100);
+	cam.end();
+
 	ofDrawBitmapStringHighlight(ofToString(ofGetFrameRate()), 10, 20);
+	{
+		stringstream ss;
+		auto pose = zed.getTrackedPose();
+		ss << "pos:" << pose.getTranslation() << endl;
+		ss << "rot:" << pose.getRotate().getEuler();
+		ofDrawBitmapStringHighlight(ss.str(), 10, 40);
+	}
 }
 
 //--------------------------------------------------------------
