@@ -8,17 +8,20 @@ namespace ofxZED
 	// convert func
 	inline ofMatrix4x4 toOf(const sl::Transform& t)
 	{
-		return ofMatrix4x4(&t.m[0]);
+		auto m = ofMatrix4x4(&t.m[0]);
+		return ofMatrix4x4::getTransposedOf(m);
 	}
 
-	inline sl::Transform toZed(ofMatrix4x4& mat)
+	inline sl::Transform toZed(const ofMatrix4x4& mat)
 	{
-		return sl::Transform(mat.getPtr());
+		ofMatrix4x4 m = ofMatrix4x4::getTransposedOf(mat);
+		return sl::Transform(m.getPtr());
 	}
 
-	inline sl::Transform toZed(glm::mat4& mat)
+	inline sl::Transform toZed(const glm::mat4& mat)
 	{
-		return sl::Transform(reinterpret_cast<float*>(&mat));
+		ofMatrix4x4 m = mat;
+		return toZed(m);
 	}
 
 	inline ofVec2f toOf(const sl::float2& v)
@@ -68,6 +71,12 @@ namespace ofxZED
 	{
 		return sl::float4(v.x, v.y, v.z, v.w);
 	}
+
+	inline sl::Orientation toZed(const ofQuaternion& v)
+	{
+		return sl::Orientation(sl::float4(v.x(), v.y(), v.z(), v.w()));
+	}
+
 
 	class MR;
 

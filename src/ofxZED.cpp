@@ -90,6 +90,9 @@ namespace ofxZED
 		}
 
 		if (zed) {
+			if (bUseTracking) {
+				zed->disableTracking();
+			}
 			zed->close();
 			zed = nullptr;
 			bZedReady = false;
