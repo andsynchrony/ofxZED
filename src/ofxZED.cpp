@@ -1,25 +1,24 @@
 #include "ofxZED.h"
 
-
-
 ofxZED::ofxZED()
 {
 }
-
 
 ofxZED::~ofxZED()
 {
 }
 
-
-void ofxZED::init(bool useColorImage, bool useDepthImage)
+void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::zed::MODE mode, sl::zed::ZEDResolution_mode resolution, float fps)
 {
 	bUseColorImage = useColorImage;
 	bUseDepthImage = useDepthImage;
+
 	ofLog() << "Initializing ZED camera." << std::endl;
 
-	zed = new sl::zed::Camera(sl::zed::HD720);
-	sl::zed::ERRCODE zederr = zed->init(sl::zed::MODE::PERFORMANCE, 0, false, false, false);
+	zed = new sl::zed::Camera(resolution, fps);
+	ofLog() << "Resolution Mode:" << resolution << std::endl;
+
+	sl::zed::ERRCODE zederr = zed->init(mode, cameraID, true, false, false);
 
 	if (zederr != sl::zed::SUCCESS)
 	{
@@ -29,10 +28,14 @@ void ofxZED::init(bool useColorImage, bool useDepthImage)
 	else
 	{
 		ofLog() << "ZED initialized." << endl;
+
 	}
 
 	zedWidth = zed->getImageSize().width;
 	zedHeight = zed->getImageSize().height;
+
+	ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
+	ofLog() << "FPS: " << getCurrentFPS() << endl;
 
 	colorBuffer = new uchar[zedWidth * zedHeight * 3];
 	depthBuffer = new uchar[zedWidth * zedHeight];
@@ -46,16 +49,21 @@ ofVec2f ofxZED::getImageDimensions()
 	return ofVec2f(zedWidth, zedHeight);
 }
 
+float ofxZED::getCurrentFPS() 
+{
+	return zed->getCurrentFPS();
+}
+
 
 void ofxZED::update()
 {
 	if (bUseDepthImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::FULL, true, true);
+		zed->grab(sl::zed::SENSING_MODE::RAW, true, true);
 	}
 	else if(bUseColorImage)
 	{
-		zed->grab(sl::zed::SENSING_MODE::RAW, false, false);
+		zed->grab(sl::zed::SENSING_MODE::FULL, false, false);
 	}
 
 	if(bUseColorImage)
@@ -89,10 +97,32 @@ void ofxZED::fillColorBuffer()
 	
 }
 
+
+int ofxZED::getDepthAtPoint(int x, int y) {
+	try {
+
+		cv::Mat depthMap(zedHeight, zedWidth, CV_32F);
+
+		slMat2cvMat(zed->retrieveMeasure(sl::zed::MEASURE::DEPTH)).copyTo(depthMap);
+
+		if (x >= 0 && y >= 0 && x < zedWidth && y < zedHeight) 
+		{
+			return depthMap.at<float>(y, x);
+		}
+		else
+		{
+			ofLog(OF_LOG_ERROR) << "ERROR: Out of Bounds. Image resolution is " << zedWidth << ", " << zedHeight << ". Pick a point within the frame." << std::endl;
+			return -1;
+		}
+	}
+	catch (int e) {
+		ofLog(OF_LOG_ERROR) << "Could not get depth at point. Error: " << e << std::endl;
+	}
+}
+
 void ofxZED::fillDepthBuffer()
 {
 	sl::zed::Mat zedView = zed->normalizeMeasure(sl::zed::MEASURE::DEPTH);
-	ofLog() << zedView.width << " // " << zedView.height << endl;
 	for (int y = 0; y < zedHeight; y++)
 	{
 		for (int x = 0; x < zedWidth; x++)

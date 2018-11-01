@@ -5,7 +5,7 @@ Implementation of StereoLab's ZED camera for openFrameworks
 - <a href="http://openframeworks.cc/download/">openFrameworks 0.9 for x64 builds</a>
 - <a href="https://www.visualstudio.com/">Visual Studio 2015</a>
 - <a href="https://www.stereolabs.com/developers/#start_anchor">ZED driver's and SDK</a>
-- <a href="https://developer.nvidia.com/cuda-toolkit-70">NVIDIA Cuda</a> (tested with 7.0)
+- <a href="https://developer.nvidia.com/cuda-toolkit-70">NVIDIA Cuda</a> (tested with 7.0 and 7.5)
 
 
 #Installation:
@@ -18,3 +18,5 @@ Implementation of StereoLab's ZED camera for openFrameworks
 
 #Credits
 Put together for openFrameworks by <a href="http://designandsystems.de">Design & Systems</a> / <a href="http://www.stefanwagner.io">Stefan Wagner (andsynchrony)</a> 
+
+Some functionalities extended by <a href="http://mithru.com/"> Mithru Vigneshwara</a>.
