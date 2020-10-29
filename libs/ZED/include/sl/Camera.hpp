@@ -186,7 +186,9 @@ namespace sl {
         size_t width; /**< array width in pixels  */
         size_t height; /**< array height in pixels*/
 
-        Resolution(size_t w_ = 0, size_t h_ = 0) : width(w_), height(h_) {
+        Resolution(size_t w_ = 0, size_t h_ = 0) {
+            width = w_;
+            height = h_;
         }
 
         /**
@@ -226,7 +228,11 @@ namespace sl {
         size_t width; /**< width of the rectangle in pixels.*/
         size_t height; /**< height of the rectangle in pixels.*/
 
-        Rect(size_t x_ = 0, size_t y_ = 0, size_t w_ = 0, size_t h_ = 0) : x(x_), y(y_), width(w_), height(h_) {
+        Rect(size_t x_ = 0, size_t y_ = 0, size_t w_ = 0, size_t h_ = 0) {
+            x = x_;
+            y = y_;
+            width = w_;
+            height = h_;
         }
 
         /**
@@ -317,9 +323,7 @@ namespace sl {
         METER, /**< International System, 1 METER */
         INCH, /**< Imperial Unit, 1/12 FOOT */
         FOOT, /**< Imperial Unit, 1 FOOT */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -344,9 +348,7 @@ namespace sl {
         RIGHT_HANDED_Z_UP, /**< Right-Handed with Z pointing up and Y forward. Used in 3DSMax. */
         LEFT_HANDED_Z_UP, /**< Left-Handed with Z axis pointing up and X forward. Used in Unreal Engine. */
         RIGHT_HANDED_Z_UP_X_FWD, /**< Right-Handed with Z pointing up and X forward. Used in ROS (REP 103). */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -395,9 +397,7 @@ namespace sl {
         PLANE_NOT_FOUND, /**< Plane not found, either no plane is detected in the scene, at the location or corresponding to the floor, or the floor plane doesn't match the prior given*/
         MODULE_NOT_COMPATIBLE_WITH_CAMERA, /**< The Object detection module is only compatible with the ZED 2*/
         MOTION_SENSORS_REQUIRED, /**< The module needs the sensors to be enabled (see InitParameters::disable_sensors) */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -428,9 +428,7 @@ namespace sl {
         ZED, /**< Defines ZED Camera model */
         ZED_M, /**<  Defines ZED Mini (ZED-M) Camera model */
         ZED2, /**< Defines ZED 2 Camera model */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -450,9 +448,7 @@ namespace sl {
         USB, /**< USB input mode  */
         SVO, /**<  SVO file input mode */
         STREAM, /**< STREAM input mode (requires to use enableStreaming()/disableStreaming() on the "sender" side) */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -471,9 +467,7 @@ namespace sl {
     enum class CAMERA_STATE {
         AVAILABLE, /**< Defines if the camera can be opened by the SDK */
         NOT_AVAILABLE, /**<  Defines if the camera is already opened and unavailable*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -537,9 +531,7 @@ namespace sl {
     enum class STREAMING_CODEC {
         H264, /**< AVCHD/H264 encoding used in image streaming.*/
         H265, /**<  HEVC/H265 encoding used in image streaming.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     /**
@@ -592,9 +584,7 @@ namespace sl {
         GYROSCOPE, /**< Three axis Gyroscope sensor to measure the angular velocitiers. */
         MAGNETOMETER, /**< Three axis Magnetometer sensor to measure the orientation of the device respect to the earth magnetic field. */
         BAROMETER, /**< Barometer sensor to measure the atmospheric pressure. */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -617,9 +607,7 @@ namespace sl {
         HPA, /**< Atmospheric pressure [hPa]. */
         CELSIUS, /**< Temperature [°C]. */
         HERTZ, /**< Frequency [Hz]. */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -682,9 +670,7 @@ namespace sl {
             SERIAL,
             SVO_FILE,
             STREAM,
-            ///@cond SHOWHIDDEN 
             LAST
-            ///@endcond
         };
 
         INPUT_TYPE input_type = INPUT_TYPE::ID;
@@ -702,12 +688,9 @@ namespace sl {
      */
     enum class DETECTION_MODEL {
         MULTI_CLASS_BOX, /**< Any objects, bounding box based */
-        MULTI_CLASS_BOX_ACCURATE, /**< Any objects, bounding box based, more accurate but slower than the base model */
         HUMAN_BODY_FAST, /**<  Keypoints based, specific to human skeleton, real time performance even on Jetson or low end GPU cards */
         HUMAN_BODY_ACCURATE, /**<  Keypoints based, specific to human skeleton, state of the art accuracy, requires powerful GPU */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -2439,13 +2422,13 @@ namespace sl {
         \param filePath : file path including the name and extension.
         \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
-            \note Supported \ref MAT_TYPE are :
-            \ref MAT_TYPE::F32_C1 for PNG/PFM/PGM,
-            \ref MAT_TYPE::F32_C3 for PCD/PLY/VTK/XYZ,
-            \ref MAT_TYPE::F32_C4 for PCD/PLY/VTK/WYZ,
-            \ref MAT_TYPE::U8_C1 for PNG/JPG,
-            \ref MAT_TYPE::U8_C3 for PNG/JPG,
-            \ref MAT_TYPE::U8_C4 for PNG/JPG,
+                \note Supported \ref MAT_TYPE are :
+                \ref MAT_TYPE::F32_C1 for PNG/PFM/PGM,
+                \ref MAT_TYPE::F32_C3 for PCD/PLY/VTK/XYZ,
+                \ref MAT_TYPE::F32_C4 for PCD/PLY/VTK/WYZ,
+                \ref MAT_TYPE::U8_C1 for PNG/JPG,
+                \ref MAT_TYPE::U8_C3 for PNG/JPG,
+                \ref MAT_TYPE::U8_C4 for PNG/JPG,
          */
         ERROR_CODE read(const String &filePath);
 
@@ -2895,15 +2878,17 @@ namespace sl {
          */
         Rotation getRotationMatrix() const;
 
-        /*@cond SHOWHIDDEN*/
         /**
         \brief Sets the orientation from a Rotation.
         \param rotation : the Rotation to be used.
 
         \deprecated See \ref setRotationMatrix
          */
-        SL_DEPRECATED("Use setRotationMatrix instead")
-        void setRotation(const Rotation &rotation);
+
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use setRotationMatrix instead") /* @endcond*/
+        inline void setRotation(const Rotation &rotation) {
+            setRotationMatrix(rotation);
+        }
 
         /**
         \brief Returns the current orientation as a Rotation.
@@ -2911,9 +2896,11 @@ namespace sl {
 
         \deprecated See \ref getRotationMatrix
          */
-        SL_DEPRECATED("Use getRotationMatrix instead")
-        Rotation getRotation() const;
-        /*@endcond*/
+
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use getRotationMatrix instead") /* @endcond*/
+        inline Rotation getRotation() const {
+            return getRotationMatrix();
+        }
 
         /**
         \brief Sets the current Orientation to identity.
@@ -3004,7 +2991,6 @@ namespace sl {
          */
         Rotation getRotationMatrix() const;
 
-        /*@cond SHOWHIDDEN*/
         /**
         \brief Sets the rotation of the current Transform from an Rotation.
         \param rotation : the Rotation to be used.
@@ -3012,8 +2998,10 @@ namespace sl {
         \deprecated See \ref setRotationMatrix
          */
 
-        SL_DEPRECATED("Use setRotationMatrix instead")
-        void setRotation(const Rotation &rotation);
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use setRotationMatrix instead") /*@endcond*/
+        inline void setRotation(const Rotation &rotation) {
+            setRotationMatrix(rotation);
+        }
 
         /**
         \brief Returns the Rotation of the current Transform.
@@ -3022,9 +3010,11 @@ namespace sl {
 
         \deprecated See \ref getRotationMatrix
          */
-        SL_DEPRECATED("Use getRotationMatrix instead")
-        Rotation getRotation() const;
-        /*@endcond*/
+
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use getRotationMatrix instead") /*@endcond*/
+        inline Rotation getRotation() const {
+            return getRotationMatrix();
+        }
 
         /**
         \brief Sets the translation of the current Transform from an Translation.
@@ -3122,10 +3112,8 @@ namespace sl {
 
         float getCameraBaseline();
 
-        /*@cond SHOWHIDDEN*/
-        SL_DEPRECATED("Use stereo_transform.getRotationMatrix instead") float3 R; /**< \deprecated see stereo_transform, Rotation on its own (using Rodrigues' transformation) of the right sensor. The left is considered as the reference. Defined as 'tilt', 'convergence' and 'roll'. Using a \ref Rotation, you can use \ref Rotation::setRotationVector(R) to convert into other representations.*/
-        SL_DEPRECATED("Use stereo_transform.getTranslation instead") float3 T; /**< \deprecated see stereo_transform,  Translation between the two sensors. T.x is the distance between the two cameras (baseline) in the sl::UNIT chosen during sl::Camera::open (mm, cm, meters, inches...).*/
-        /*@endcond*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use stereo_transform.getRotationMatrix instead")/*@endcond*/ float3 R; /**< \deprecated see stereo_transform, Rotation on its own (using Rodrigues' transformation) of the right sensor. The left is considered as the reference. Defined as 'tilt', 'convergence' and 'roll'. Using a \ref Rotation, you can use \ref Rotation::setRotationVector(R) to convert into other representations.*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use stereo_transform.getTranslation instead")/*@endcond*/ float3 T; /**< \deprecated see stereo_transform,  Translation between the two sensors. T.x is the distance between the two cameras (baseline) in the sl::UNIT chosen during sl::Camera::open (mm, cm, meters, inches...).*/
     };
 
     /**
@@ -3157,7 +3145,7 @@ namespace sl {
 
     \note This object is meant to be used as a read-only container, editing any of its field won't impact the SDK.
      */
-    struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ SensorsConfiguration {
+    struct SensorsConfiguration {
         unsigned int firmware_version = 0; /**< The firmware version of the sensor module, 0 if no sensors are available (ZED camera model). */
         sl::Transform camera_imu_transform; /**< IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame. */
         sl::SensorParameters accelerometer_parameters; /**< Configuration of the accelerometer device */
@@ -3202,15 +3190,13 @@ namespace sl {
         CameraConfiguration camera_configuration; /**< Camera configuration as defined in \ref CameraConfiguration. */
         SensorsConfiguration sensors_configuration; /**< Device Sensors configuration as defined in \ref SensorsConfiguration. */
 
-        /*@cond SHOWHIDDEN*/
-        SL_DEPRECATED("Use camera_configuration.calibration_parameters instead") CalibrationParameters calibration_parameters; /**< \deprecated see CameraConfiguration::calibration_parameters, Intrinsic and Extrinsic stereo parameters for rectified/undistorded images (default).*/
-        SL_DEPRECATED("Use camera_configuration.calibration_parameters_raw instead") CalibrationParameters calibration_parameters_raw; /**< \deprecated see CameraConfiguration::calibration_parameters_raw, Intrinsic and Extrinsic stereo parameters for original images (unrectified/distorded).*/
-        SL_DEPRECATED("Use sensors_configuration.camera_imu_transform instead") sl::Transform camera_imu_transform; /**< \deprecated see SensorsConfiguration::camera_imu_transform, IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame.*/
-        SL_DEPRECATED("Use camera_configuration.firmware_version instead") unsigned int camera_firmware_version = 0; /**< \deprecated CameraConfiguration::firmware_version, Firmware version of the camera.*/
-        SL_DEPRECATED("Use sensors_configuration.firmware_version instead") unsigned int sensors_firmware_version = 0; /**< \deprecated see SensorsConfiguration::firmware_version, Firmware version of the sensors of ZED-M or ZED2.*/
-        SL_DEPRECATED("Use camera_configuration.fps instead") float camera_fps = 0; /**< \deprecated see CameraConfiguration::fps, camera frame rate. */
-        SL_DEPRECATED("Use camera_configuration.resolution instead") Resolution camera_resolution; /**< \deprecated see CameraConfiguration::resolution, camera resolution. */
-        /*@endcond*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.calibration_parameters instead")/*@endcond*/ CalibrationParameters calibration_parameters; /**< \deprecated see CameraConfiguration::calibration_parameters, Intrinsic and Extrinsic stereo parameters for rectified/undistorded images (default).*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.calibration_parameters_raw instead")/*@endcond*/ CalibrationParameters calibration_parameters_raw; /**< \deprecated see CameraConfiguration::calibration_parameters_raw, Intrinsic and Extrinsic stereo parameters for original images (unrectified/distorded).*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use sensors_configuration.camera_imu_transform instead")/*@endcond*/ sl::Transform camera_imu_transform; /**< \deprecated see SensorsConfiguration::camera_imu_transform, IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame.*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.firmware_version instead")/*@endcond*/ unsigned int camera_firmware_version = 0; /**< \deprecated CameraConfiguration::firmware_version, Firmware version of the camera.*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use sensors_configuration.firmware_version instead")/*@endcond*/ unsigned int sensors_firmware_version = 0; /**< \deprecated see SensorsConfiguration::firmware_version, Firmware version of the sensors of ZED-M or ZED2.*/
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.fps instead")/*@endcond*/ float camera_fps = 0; /**< \deprecated see CameraConfiguration::fps, camera frame rate. */
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.resolution instead")/*@endcond*/ Resolution camera_resolution; /**< \deprecated see CameraConfiguration::resolution, camera resolution. */
     }; ///@}
 
     /**
@@ -3263,15 +3249,16 @@ namespace sl {
          */
         Rotation getRotationMatrix();
 
-        /*@cond SHOWHIDDEN*/
         /**
         \brief Returns the rotation (3x3) from the pose.
         \return The (3x3) rotation matrix.
         \deprecated See \ref getRotationMatrix
          */
-        SL_DEPRECATED("use getRotationMatrix instead")
-        Rotation getRotation();
-        /*@endcond*/
+
+        /*@cond SHOWHIDDEN*/ SL_DEPRECATED("use getRotationMatrix instead") /*@endcond*/
+        inline Rotation getRotation() {
+            return getRotationMatrix();
+        }
 
         /**
         \brief Returns the rotation (3x1 rotation vector obtained from 3x3 rotation matrix using Rodrigues formula) from the pose.
@@ -3339,9 +3326,7 @@ namespace sl {
             STATIC, /**< The camera is static. */
             MOVING, /**< The camera is moving. */
             FALLING, /**< The camera is falling. */
-            ///@cond SHOWHIDDEN 
             LAST
-            ///@endcond
         };
 
         /**
@@ -3394,9 +3379,7 @@ namespace sl {
                 BAROMETER, /**< The Barometer sensor location */
                 ONBOARD_LEFT, /**< The Temperature sensor left location */
                 ONBOARD_RIGHT, /**< The Temperature sensor right location */
-                ///@cond SHOWHIDDEN 
                 LAST
-                ///@endcond
             };
 
             ERROR_CODE get(SENSOR_LOCATION location, float& temperature);
@@ -3651,15 +3634,9 @@ namespace sl {
     \brief Lists available object class
      */
     enum class OBJECT_CLASS {
-        PERSON = 0,
-        VEHICLE = 1,
-        BAG = 2,
-        ANIMAL = 3,
-        ELECTRONICS = 4,
-        FRUIT_VEGETABLE = 5,
-        ///@cond SHOWHIDDEN 
-        LAST = 6
-        ///@endcond
+        PERSON = 0, /**< For people detection */
+        VEHICLE = 1, /**< For vehicles detection. It can be cars, trucks, buses, motorcycles etc */
+        LAST
     };
 
     ///@cond SHOWHIDDEN
@@ -3671,55 +3648,6 @@ namespace sl {
     ///@endcond
 
     /**
-   \enum OBJECT_SUBCLASS
-   \ingroup Object_group
-   \brief Lists available object subclass
-     */
-    enum class OBJECT_SUBCLASS {
-        PERSON = 0,
-        // VEHICLES
-        BICYCLE = 1,
-        CAR = 2,
-        MOTORBIKE = 3,
-        BUS = 4,
-        TRUCK = 5,
-        BOAT = 6,
-        // BAGS
-        BACKPACK = 7,
-        HANDBAG = 8,
-        SUITCASE = 9,
-        // ANIMALS
-        BIRD = 10,
-        CAT = 11,
-        DOG = 12,
-        HORSE = 13,
-        SHEEP = 14,
-        COW = 15,
-        // ELECTRONICS
-        CELLPHONE = 16,
-        LAPTOP = 17,
-        // FRUITS/VEGETABLES
-        BANANA = 18,
-        APPLE = 19,
-        ORANGE = 20,
-        CARROT = 21,
-        ///@cond SHOWHIDDEN 
-        LAST = 22
-        ///@endcond
-    };
-
-    ///@cond SHOWHIDDEN
-    String SL_CORE_EXPORT toString(const OBJECT_SUBCLASS &object_subclass);
-
-    inline std::ostream &operator<<(std::ostream &os, const OBJECT_SUBCLASS &object_subclass) {
-        return os << toString(object_subclass);
-    }
-    ///@endcond
-
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ OBJECT_CLASS getObjectClass(OBJECT_SUBCLASS object_type);
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ std::vector<OBJECT_SUBCLASS> getObjectSubClasses(OBJECT_CLASS object_type);
-
-    /**
     \enum OBJECT_TRACKING_STATE
     \ingroup Object_group
     \brief Lists available object tracking state
@@ -3729,9 +3657,7 @@ namespace sl {
         OK, /**< The object is tracked */
         SEARCHING, /**< The object couldn't be detected in the image and is potentially occluded, the trajectory is estimated */
         TERMINATE, /**< This is the last searching state of the track, the track will be deleted in the next retreiveObject */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -3750,9 +3676,7 @@ namespace sl {
     enum class OBJECT_ACTION_STATE {
         IDLE = 0, /**< The object is staying static. */
         MOVING = 1, /**< The object is moving. */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -3769,25 +3693,20 @@ namespace sl {
      */
     class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ObjectData {
     public:
-        ObjectData();
+    ObjectData();
 
-        ~ObjectData();
+    ~ObjectData();
 
         /**
         \brief Object identification number, used as a reference when tracking the object through the frames
-        \note Is set to -1 if the object is not currently tracked.
+        \note Is set to -1 if the obeject is not currently tracked.
          */
         int id;
 
         /**
-        \brief Object category. Identify the object type
+        \brief Object label. Identify the object type
          */
         OBJECT_CLASS label;
-
-        /**
-        \brief Object subclass
-         */
-        OBJECT_SUBCLASS sublabel;
 
         /**
         \brief Defines the object tracking state
@@ -3812,13 +3731,13 @@ namespace sl {
 
         /**
         \brief the covariance matrix of the 3d position, represented by its upper triangular matrix value
-         * \code
+        * \code
              = [p0, p1, p2]
                [p1, p3, p4]
                [p2, p4, p5]
           \endcode
           where pi is position_covariance[i]
-         */
+        */
         float position_covariance[6];
         /**
          * \brief 2D bounding box of the person represented as four 2D points starting at the top left corner and rotation clockwise.
@@ -3832,7 +3751,7 @@ namespace sl {
 
         /**
         \brief Defines for the bounding_box_2d the pixels which really belong to the object (set to 255) and those of the background (set to 0).
-         \warning : The mask information is only available for tracked objects ( \ref OBJECT_TRACKING_STATE::OK) that have a valid depth. Otherwise, Mat will not be initialized (mask.isInit() == false)
+         \warning : The mask information is available only for tracked objects that have a valid depth.
          */
         sl::Mat mask;
 
@@ -3895,7 +3814,6 @@ namespace sl {
           \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
          */
         sl::float3 head_position;
-
     };
 
     /**
@@ -3944,7 +3862,7 @@ namespace sl {
         NOSE = 0,
         NECK = 1,
         RIGHT_SHOULDER = 2,
-        RIGHT_ELBOW = 3,
+        RIGHT_ELBOW= 3,
         RIGHT_WRIST = 4,
         LEFT_SHOULDER = 5,
         LEFT_ELBOW = 6,
@@ -3959,9 +3877,7 @@ namespace sl {
         LEFT_EYE = 15,
         RIGHT_EAR = 16,
         LEFT_EAR = 17,
-        ///@cond SHOWHIDDEN 
         LAST = 18
-        ///@endcond 
     };
 
     /**
@@ -3969,72 +3885,33 @@ namespace sl {
      * \brief return associated index of each BODY_PART
      */
     inline int getIdx(BODY_PARTS part) {
-        return static_cast<int> (part);
+        return static_cast<int>(part);
     }
 
     /**
     \ingroup Object_group
-     * \brief Links of human body keypoints, useful for display.
+     * \brief Links of human body keypoints, usefull for display.
      */
-    const std::vector<std::pair< BODY_PARTS, BODY_PARTS>> BODY_BONES
-    {
-        {
-            BODY_PARTS::NOSE, BODY_PARTS::NECK
-        },
-        {
-            BODY_PARTS::NECK, BODY_PARTS::RIGHT_SHOULDER
-        },
-        {
-            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_ELBOW
-        },
-        {
-            BODY_PARTS::RIGHT_ELBOW, BODY_PARTS::RIGHT_WRIST
-        },
-        {
-            BODY_PARTS::NECK, BODY_PARTS::LEFT_SHOULDER
-        },
-        {
-            BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_ELBOW
-        },
-        {
-            BODY_PARTS::LEFT_ELBOW, BODY_PARTS::LEFT_WRIST
-        },
-        {
-            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_HIP
-        },
-        {
-            BODY_PARTS::RIGHT_HIP, BODY_PARTS::RIGHT_KNEE
-        },
-        {
-            BODY_PARTS::RIGHT_KNEE, BODY_PARTS::RIGHT_ANKLE
-        },
-        {
-            BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_HIP
-        },
-        {
-            BODY_PARTS::LEFT_HIP, BODY_PARTS::LEFT_KNEE
-        },
-        {
-            BODY_PARTS::LEFT_KNEE, BODY_PARTS::LEFT_ANKLE
-        },
-        {
-            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::LEFT_SHOULDER
-        },
-        {
-            BODY_PARTS::RIGHT_HIP, BODY_PARTS::LEFT_HIP
-        },
-        {
-            BODY_PARTS::NOSE, BODY_PARTS::RIGHT_EYE
-        },
-        {
-            BODY_PARTS::RIGHT_EYE, BODY_PARTS::RIGHT_EAR
-        },
-        {
-            BODY_PARTS::NOSE, BODY_PARTS::LEFT_EYE
-        },
-        {
-            BODY_PARTS::LEFT_EYE, BODY_PARTS::LEFT_EAR
-        }
+    const std::vector<std::pair< BODY_PARTS, BODY_PARTS>> BODY_BONES{
+        {BODY_PARTS::NOSE, BODY_PARTS::NECK},
+        {BODY_PARTS::NECK, BODY_PARTS::RIGHT_SHOULDER},
+        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_ELBOW},
+        {BODY_PARTS::RIGHT_ELBOW, BODY_PARTS::RIGHT_WRIST},
+        {BODY_PARTS::NECK, BODY_PARTS::LEFT_SHOULDER},
+        {BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_ELBOW},
+        {BODY_PARTS::LEFT_ELBOW, BODY_PARTS::LEFT_WRIST},
+        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_HIP},
+        {BODY_PARTS::RIGHT_HIP, BODY_PARTS::RIGHT_KNEE},
+        {BODY_PARTS::RIGHT_KNEE, BODY_PARTS::RIGHT_ANKLE},
+        {BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_HIP},
+        {BODY_PARTS::LEFT_HIP, BODY_PARTS::LEFT_KNEE},
+        {BODY_PARTS::LEFT_KNEE, BODY_PARTS::LEFT_ANKLE},
+        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::LEFT_SHOULDER},
+        {BODY_PARTS::RIGHT_HIP, BODY_PARTS::LEFT_HIP},
+        {BODY_PARTS::NOSE, BODY_PARTS::RIGHT_EYE},
+        {BODY_PARTS::RIGHT_EYE, BODY_PARTS::RIGHT_EAR},
+        {BODY_PARTS::NOSE, BODY_PARTS::LEFT_EYE},
+        {BODY_PARTS::LEFT_EYE, BODY_PARTS::LEFT_EAR}
     };
 }
 #endif /* __CORE_HPP__ */
@@ -4129,9 +4006,7 @@ namespace sl {
         PLY, /**< Contains only vertices and faces.*/
         PLY_BIN, /**< Contains only vertices and faces, encoded in binary.*/
         OBJ, /**< Contains vertices, normals, faces and textures informations if possible.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond        
     };
 
     ///@cond SHOWHIDDEN
@@ -4150,9 +4025,7 @@ namespace sl {
     enum class MESH_TEXTURE_FORMAT {
         RGB, /**< The texture has 3 channels.*/
         RGBA, /**< The texture has 4 channels.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4182,9 +4055,7 @@ namespace sl {
             LOW, /**< Clean the mesh by closing small holes and removing isolated faces.*/
             MEDIUM, /**< Soft decimation and smoothing.*/
             HIGH, /**< Decimate the number of triangles and apply a soft smooth.*/
-            ///@cond SHOWHIDDEN 
             LAST
-            ///@endcond
         };
 
         /**
@@ -4521,9 +4392,7 @@ namespace sl {
         HORIZONTAL,
         VERTICAL,
         UNKNOWN,
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4789,9 +4658,9 @@ namespace sl {
  * PLEASE READ THIS SOFTWARE LICENSE CAREFULLY. IF YOU DO NOT ACCEPT THIS
  * SOFTWARE LICENSE, DO NOT USE YOUR CAMERA. RETURN IT TO UNUSED TO STEREOLABS
  * FOR A REFUND. Contact STEREOLABS at support@stereolabs.com
- *
+ * 
  * 1. Definitions
- *
+ * 
  * "Authorized Accessory" means a STEREOLABS branded ZED, ZED 2 or ZED Mini, and a STEREOLABS
  * licensed, third party branded, ZED hardware accessory whose packaging bears the official
  * "Licensed for ZED" logo. The ZED camera, ZED 2 camera and the ZED Mini camera are Authorized Accessories
@@ -4801,13 +4670,13 @@ namespace sl {
  * "Unauthorized Accessories" means all hardware accessories other than an Authorized Accessory.
  * "Unauthorized Software" means any software not distributed by STEREOLABS.
  * "You" means the user of a ZED, ZED 2 or ZED Mini camera.
- *
+ * 
  * 2. License
- *
+ * 
  * a. The Software is licensed to You, not sold. You are licensed to use the
  * Software only as downloaded from the stereolabs.com website, and updated by
  * STEREOLABS from time to time. You may not copy or reverse engineer the Software.
- *
+ * 
  * b. As conditions to this Software license, You agree that:
  *   i. You will use Your Software with ZED, ZED 2 or ZED Mini camera only and not with any
  *      other device (including). You will not use Unauthorized Accessories. They may
@@ -4824,22 +4693,22 @@ namespace sl {
  *       systems in the ZED, ZED 2 or ZED Mini camera.
  *   v. STEREOLABS may update the Software from time to time without further notice to You,
  *      for example, to update any technical limitation, security, or anti-piracy system.
- *
+ * 
  * 3. Warranty
- *
+ * 
  * The Software is covered by the Limited Warranty for Your ZED, ZED 2 or ZED Mini camera, and
  * STEREOLABS gives no other guarantee, warranty, or condition for the Software. No one
  * else may give any guarantee, warranty, or condition on STEREOLABS's behalf.
- *
+ * 
  * 4. EXCLUSION OF CERTAIN DAMAGES
- *
+ * 
  * STEREOLABS IS NOT RESPONSIBLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
  * DAMAGES; ANY LOSS OF DATA, PRIVACY, CONFIDENTIALITY, OR PROFITS; OR ANY INABILITY TO
  * USE THE SOFTWARE. THESE EXCLUSIONS APPLY EVEN IF STEREOLABS HAS BEEN ADVISED OF THE
  * POSSIBILITY OF THESE DAMAGES, AND EVEN IF ANY REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
- *
+ * 
  * 5. Choice of Law
- *
+ * 
  * French law governs the interpretation of this Software license and any claim that
  * STEREOLABS has breached it, regardless of conflict of law principles.
  *
@@ -4864,9 +4733,9 @@ namespace sl {
 
 // SDK VERSION NUMBER
 #define ZED_SDK_MAJOR_VERSION 3
-#define ZED_SDK_MINOR_VERSION 3
-#define ZED_SDK_PATCH_VERSION 0
-#define ZED_SDK_BUILD_ID "21276_7ef5c6ad"
+#define ZED_SDK_MINOR_VERSION 2
+#define ZED_SDK_PATCH_VERSION 2
+#define ZED_SDK_BUILD_ID "20566_4b0928a4"
 
 #define ZED_SDK_VERSION_ATTRIBUTE private: uint32_t _zed_sdk_major_version = ZED_SDK_MAJOR_VERSION, _zed_sdk_minor_version = ZED_SDK_MINOR_VERSION, _zed_sdk_patch_version = ZED_SDK_PATCH_VERSION;
 
@@ -4969,9 +4838,7 @@ namespace sl {
         HD1080, /**< 1920*1080, available framerates: 15, 30 fps.*/
         HD720, /**< 1280*720, available framerates: 15, 30, 60 fps.*/
         VGA, /**< 672*376, available framerates: 15, 30, 60, 100 fps.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5003,9 +4870,7 @@ namespace sl {
         WHITEBALANCE_TEMPERATURE, /**< Defines the color temperature value. Setting a value will automatically set @WHITEBALANCE_AUTO to 0. Affected value should be between 2800 and 6500 with a step of 100.*/
         WHITEBALANCE_AUTO, /**< Defines if the White balance is in automatic mode or not*/
         LED_STATUS, /**< Defines the status of the camera front LED. Set to 0 to disable the light, 1 to enable the light. Default value is on. Requires Camera FW 1523 at least.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     const int VIDEO_SETTINGS_VALUE_AUTO = -1;
@@ -5028,9 +4893,7 @@ namespace sl {
         PERFORMANCE, /**< Computation mode optimized for speed.*/
         QUALITY, /**< Computation mode designed for challenging areas with untextured surfaces.*/
         ULTRA, /**< Computation mode favorising edges and sharpness. Requires more GPU memory and computation power.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5051,9 +4914,7 @@ namespace sl {
                                * Applications example: Obstacle detection, Automated navigation, People detection, 3D reconstruction, measurements.*/
         FILL, /**< This mode outputs a smooth and fully dense depth map.
                            * Applications example: AR/VR, Mixed-reality capture, Image post-processing.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5087,9 +4948,7 @@ namespace sl {
         XYZARGB_RIGHT, /**< Colored point cloud for right sensor. Each pixel contains 4 float (X, Y, Z, color). The color need to be read as an usigned char[4] representing the ARGB color. sl::MAT_TYPE::F32_C4.*/
         XYZABGR_RIGHT, /**< Colored point cloud for right sensor. Each pixel contains 4 float (X, Y, Z, color). The color need to be read as an usigned char[4] representing the ABGR color. sl::MAT_TYPE::F32_C4.*/
         NORMALS_RIGHT, /**< Normals vector for right view. Each pixel contains 4 float (X, Y, Z, 0).  sl::MAT_TYPE::F32_C4.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5120,9 +4979,7 @@ namespace sl {
         NORMALS, /**< Color rendering of the normals. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
         DEPTH_RIGHT, /**< Color rendering of the right depth mapped on right sensor, sl::MAT_TYPE::U8_C4. */
         NORMALS_RIGHT, /**< Color rendering of the normals mapped on right sensor. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5141,9 +4998,7 @@ namespace sl {
     enum class TIME_REFERENCE {
         IMAGE, /**< Defines the timestamp at the time the frame has been extracted from USB stream. */
         CURRENT, /**<  Defines the timestamp at the time of the function call. */
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5164,9 +5019,7 @@ namespace sl {
         OK, /**< Positional tracking is working normally.*/
         OFF, /**< Positional tracking is not enabled.*/
         FPS_TOO_LOW, /**< Effective FPS is too low to give proper results for motion tracking. Consider using PERFORMANCES parameters (DEPTH_MODE_PERFORMANCE, low camera resolution (VGA,HD720))*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5189,9 +5042,7 @@ namespace sl {
         FILE_EMPTY, /**< The spatial memory contains no data, the file is empty.*/
         FILE_ERROR, /**< The spatial memory file has not been written because of a wrong file name.*/
         SPATIAL_MEMORY_DISABLED, /**< The spatial memory learning is disable, no file can be created.*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5210,9 +5061,7 @@ namespace sl {
     enum class REFERENCE_FRAME {
         WORLD, /**< The transform of sl::Pose will contains the motion with reference to the world frame (previously called PATH).*/
         CAMERA, /**< The transform of sl::Pose will contains the motion with reference to the previous camera frame (previously called POSE).*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5233,9 +5082,7 @@ namespace sl {
         NOT_ENOUGH_MEMORY, /**< The maximum memory dedicated to the scanning has been reach, the mesh will no longer be updated.*/
         NOT_ENABLED, /**< Camera::enableSpatialMapping() wasn't called (or the scanning was stopped and not relaunched).*/
         FPS_TOO_LOW, /**< Effective FPS is too low to give proper results for spatial mapping. Consider using PERFORMANCES parameters (DEPTH_MODE_PERFORMANCE, low camera resolution (VGA,HD720), spatial mapping low resolution)*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5255,9 +5102,7 @@ namespace sl {
         LOSSLESS, /**< PNG/ZSTD (lossless) CPU based compression : avg size = 42% (of RAW).*/
         H264, /**< H264(AVCHD) GPU based compression : avg size = 1% (of RAW). Requires a NVIDIA GPU*/
         H265, /**< H265(HEVC) GPU based compression: avg size = 1% (of RAW). Requires a NVIDIA GPU, Pascal architecture or newer*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5272,7 +5117,18 @@ namespace sl {
     \ingroup Video_group
     \brief Recording structure that contains information about SVO.
      */
-    struct /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ RecordingStatus {
+    struct RecordingStatus {
+
+        RecordingStatus() {
+            is_recording = false;
+            is_paused = false;
+            status = false;
+            current_compression_time = 0;
+            current_compression_ratio = 0;
+            average_compression_time = 0;
+            average_compression_ratio = 0;
+        }
+
         bool is_recording; /**< Recorder status, true if enabled */
         bool is_paused; /**< Recorder status, true if the pause is enabled */
         bool status; /**< Status of current frame. True for success or false if the frame couldn't be written in the SVO file.*/
@@ -5280,24 +5136,17 @@ namespace sl {
         double current_compression_ratio; /**< Compression ratio (% of raw size) for the current frame.*/
         double average_compression_time; /**< Average compression time in ms since beginning of recording.*/
         double average_compression_ratio; /**< Average compression ratio (% of raw size) since beginning of recording.*/
-
-        /**
-        \brief Default constructor. Set all parameters to their default values
-         */
-        RecordingStatus();
     };
 
     /**
     \ingroup Video_group
     \brief Lists available compression modes for SVO recording.
      */
-    enum FLIP_MODE : int {
+    enum  FLIP_MODE : int {
         OFF = 0, /**<  default behavior.*/
         ON = 1, /**< Images and camera sensors data are flipped, useful when your camera is mounted upside down.*/
         AUTO = 2, /**< in live mode: use the camera orientation (if an IMU is available) to set the flip mode, in SVO mode, read the state of this enum when recorded*/
-        ///@cond SHOWHIDDEN 
         LAST
-        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5670,7 +5519,28 @@ namespace sl {
                 InputType input_type = InputType(),
                 String optional_settings_path_ = String(),
                 bool sensors_required_ = false,
-                bool enable_image_enhancement_ = true);
+                bool enable_image_enhancement_ = true)
+        : camera_resolution(camera_resolution_)
+        , camera_fps(camera_fps_)
+        , svo_real_time_mode(svo_real_time_mode_)
+        , depth_mode(depth_mode_)
+        , coordinate_units(coordinate_units_)
+        , coordinate_system(coordinate_system_)
+        , sdk_verbose(sdk_verbose_)
+        , sdk_gpu_id(sdk_gpu_id_)
+        , depth_minimum_distance(depth_minimum_distance_)
+        , depth_maximum_distance(depth_maximum_distance_)
+        , camera_disable_self_calib(camera_disable_self_calib_)
+        , camera_image_flip(camera_image_flip_)
+        , enable_right_side_measure(enable_right_side_measure_)
+        , sdk_verbose_log_file(sdk_verbose_log_file_)
+        , depth_stabilization(depth_stabilization_)
+        , sdk_cuda_ctx(sdk_cuda_ctx_)
+        , input(input_type)
+        , optional_settings_path(optional_settings_path_)
+        , sensors_required(sensors_required_)
+        , enable_image_enhancement(enable_image_enhancement_) {
+        }
 
         /**
         This function saves the current set of parameters into a file to be reloaded with the \ref load() function.
@@ -5749,14 +5619,12 @@ namespace sl {
          */
         int confidence_threshold = 100;
 
-        /*@cond SHOWHIDDEN*/
         /**
         Threshold to reject depth values based on their textureness confidence.
         \deprecated see texture_confidence_threshold.
          */
-        SL_DEPRECATED("use texture_confidence_threshold instead")
+        /*@cond SHOWHIDDEN*/SL_DEPRECATED("use texture_confidence_threshold instead")/*@endcond*/
         int textureness_confidence_threshold = 100;
-        /*@endcond*/
 
         /**
         Threshold to reject depth values based on their texture confidence.
@@ -5772,10 +5640,15 @@ namespace sl {
         \brief Default constructor, set all parameters to their default and optimized values.
          */
         RuntimeParameters(SENSING_MODE sensing_mode_ = SENSING_MODE::STANDARD,
-                bool enable_depth_ = true,
-                int confidence_threshold_ = 100,
+                bool enable_depth_ = true, int confidence_threshold_ = 100,
                 int texture_confidence_threshold_ = 100,
-                REFERENCE_FRAME measure3D_reference_frame_ = REFERENCE_FRAME::CAMERA);
+                REFERENCE_FRAME measure3D_reference_frame_ = REFERENCE_FRAME::CAMERA)
+        : sensing_mode(sensing_mode_)
+        , enable_depth(enable_depth_)
+        , confidence_threshold(confidence_threshold_)
+        , texture_confidence_threshold(texture_confidence_threshold_)
+        , measure3D_reference_frame(measure3D_reference_frame_) {
+        }
 
         /**
         \brief Saves the current set of parameters into a file.
@@ -5871,13 +5744,16 @@ namespace sl {
         /**
         \brief  Default constructor. Sets all parameters to their default and optimized values.
          */
-        PositionalTrackingParameters(Transform init_posistion_ = Transform(),
-                bool enable_memory_ = true,
-                bool enable_pose_smoothing_ = false,
-                String area_path_ = String(),
-                bool set_floor_as_origin_ = false,
-                bool enable_imu_fusion_ = true,
-                bool set_as_static_ = false);
+        PositionalTrackingParameters(Transform init_pos = Transform(), bool _enable_memory = true, bool _enable_pose_smoothing = false, String _area_path = String(),
+                bool _set_floor_as_origin = false, bool _enable_imu_fusion = true, bool _set_as_static = false)
+        : initial_world_transform(init_pos)
+        , enable_area_memory(_enable_memory)
+        , enable_pose_smoothing(_enable_pose_smoothing)
+        , area_file_path(_area_path)
+        , set_floor_as_origin(_set_floor_as_origin)
+        , enable_imu_fusion(_enable_imu_fusion)
+        , set_as_static(_set_as_static) {
+        }
 
         /**
         \brief Saves the current set of parameters into a file.
@@ -5885,6 +5761,7 @@ namespace sl {
         \return true if the file was successfully saved, otherwise false.
          */
         bool save(String filename);
+
         /**
         \brief Loads the values of the parameters contained in a file.
         \param filename: the path to the file from which the parameters will be loaded.
@@ -5952,7 +5829,8 @@ namespace sl {
                 bool save_texture_ = false,
                 bool use_chunk_only_ = false,
                 bool reverse_vertex_order_ = false,
-                SPATIAL_MAP_TYPE map_type = SPATIAL_MAP_TYPE::MESH);
+                SPATIAL_MAP_TYPE map_type = SPATIAL_MAP_TYPE::MESH
+                );
 
         /**
         \brief Returns the resolution corresponding to the given \ref MAPPING_RESOLUTION preset.
@@ -6143,7 +6021,7 @@ namespace sl {
          Any other values will be discarded and camera FPS will be taken.
          \default 0 means that the camera framerate will be taken
          */
-        unsigned int target_framerate = 0;
+        unsigned int target_framerate  = 0;
 
 
         /**
@@ -6155,7 +6033,7 @@ namespace sl {
                 int gop_size_ = -1,
                 bool adaptative_bitrate_ = false,
                 unsigned short chunk_size_ = 32768,
-                unsigned int target_framerate_ = 0
+                unsigned int target_framerate_ =0
                 );
     };
 
@@ -6194,7 +6072,7 @@ namespace sl {
          Any other values will be discarded and camera FPS will be taken.
          \default 0 means that the camera framerate will be taken
          */
-        unsigned int target_framerate = 0;
+        unsigned int target_framerate  = 0;
 
         /**
         \brief In case of streaming input, if set to false, it will avoid decoding/re-encoding and convert directly streaming input into a SVO file.
@@ -6203,6 +6081,10 @@ namespace sl {
          */
         bool transcode_streaming_input = false;
 
+
+
+
+
         /**
         \brief Default constructor. Set all parameters to their default values
          */
@@ -6210,7 +6092,13 @@ namespace sl {
                 SVO_COMPRESSION_MODE compression_mode_ = SVO_COMPRESSION_MODE::H264,
                 unsigned int target_framerate_ = 0,
                 unsigned int bitrate_ = 0,
-                bool transcode_streaming_input_ = false);
+                bool transcode_streaming_input_=false) :
+        video_filename(video_filename_)
+        , compression_mode(compression_mode_)
+        , bitrate(bitrate_)
+        , target_framerate(target_framerate_)
+        , transcode_streaming_input(transcode_streaming_input_){
+        }
     };
 
     /**
@@ -6239,24 +6127,17 @@ namespace sl {
          */
         bool enable_mask_output = false;
 
+
         /**
         \brief Enable human pose estimation with skeleton keypoints output
          */
         DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX;
 
         /**
-        \brief Defines if the body fitting will be applied
-         */
-        bool enable_body_fitting = false;
-
-        /**
         \brief Default constructor. Set all parameters to their default values
          */
-        ObjectDetectionParameters(bool image_sync_ = true,
-                bool enable_tracking_ = true,
-                bool enable_mask_output_ = false,
-                DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX,
-                bool enable_body_fitting_ = false);
+        ObjectDetectionParameters(bool image_sync_ = true, bool enable_tracking_ = true,
+                bool enable_mask_output_ = false, DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX);
     };
 
     /**
@@ -6273,43 +6154,22 @@ namespace sl {
         \brief Defines the confidence threshold: interval between 1 and 99. A confidence of 1 meaning a low
          *  threshold, more uncertain objects and 99 very few but very precise objects.
          * If the scene contains a lot of objects, increasing the confidence can slightly speed up the process, since every object instances are tracked.
-         * 
-         * Default confidence threshold value, used as a fallback when ObjectDetectionRuntimeParameters::object_class_detection_confidence_threshold is partially set
          */
         float detection_confidence_threshold;
 
         /**
-        \brief Select which object type to detect and track, by default (PERSON and VEHICLE) to keep the old behavior.
+        \brief Defines which object type to detect and track, by default (empty vector) everything.
          * Fewer objects type can slightly speed up the process, since every objects are tracked.
-         * Only the selected classes in the vector will be outputted.
-         
-         In order to get all the available classes, the filter vector must be empty :
-         \code
-         object_class_filter = {};
-         \endcode
-         *
-         To select a set of specific object classes, like car, bicycle and bus for instance:
-         \code
-         object_class_filter = {OBJECT_CLASS::CAR, OBJECT_CLASS::BICYCLE, OBJECT_CLASS::BUS};
-         \endcode
-         * 
-        \note When using the legacy OBJECT_CLASS::VEHICLE meta class, no new class (BICYCLE, TRUCK, BACKPACK...) can be chosen
          */
         std::vector<OBJECT_CLASS> object_class_filter;
 
         /**
-        \brief Defines a detection threshold for each classes, can be empty for some classes, 
-         * ObjectDetectionRuntimeParameters::detection_confidence_threshold will be taken as fallback/default value
-         */
-        std::map<OBJECT_CLASS, float> object_class_detection_confidence_threshold;
-
-        /**
         \brief Default constructor. Set all parameters to their default values
          */
-        ObjectDetectionRuntimeParameters(float detection_confidence_threshold = 20.f,
-                std::vector<OBJECT_CLASS> object_class_filter = {},
-        std::map<OBJECT_CLASS, float> object_class_detection_confidence_threshold = std::map<OBJECT_CLASS, float> ());
+        ObjectDetectionRuntimeParameters(float detection_confidence_threshold = 50, std::vector<OBJECT_CLASS> object_class_filter = std::vector<OBJECT_CLASS> ());
     };
+
+
 
     class CameraMemberHandler;
 
@@ -6633,6 +6493,7 @@ namespace sl {
          */
         void setCameraSettings(VIDEO_SETTINGS settings, int value = VIDEO_SETTINGS_VALUE_AUTO);
 
+
         /**
         \brief Overloaded function for @VIDEO_SETTINGS::AEC_AGC_ROI which takes a Rect as parameter
 
@@ -6643,6 +6504,8 @@ namespace sl {
         \note Works only if the camera is open in live mode with @VIDEO_SETTINGS::AEC_AGC_ROI. It will return @ERROR_CODE::INVALID_FUNCTION_CALL or @ERROR_CODE::INVALID_FUNCTION_PARAMETERS otherwise.
          */
         ERROR_CODE setCameraSettings(VIDEO_SETTINGS settings, Rect roi, sl::SIDE side = sl::SIDE::BOTH, bool reset = false);
+
+
 
         /**
         \brief Returns the current framerate at which the \ref grab() method is successfully called.
