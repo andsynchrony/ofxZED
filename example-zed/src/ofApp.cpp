@@ -49,7 +49,6 @@ void ofApp::setup()
 void ofApp::update()
 {
 	zed.update();
-	ofLog() << "FPS: " << zed.getCurrentFPS() << endl;
 }
 
 //--------------------------------------------------------------
@@ -79,6 +78,7 @@ void ofApp::draw()
 	ofDrawBitmapStringHighlight(ofToString(ofGetFrameRate()), 10, 20);
 	{
 		stringstream ss;
+		ss << "cam fps : " << zed.getCurrentFPS() << endl;
 		auto pose = zed.getTrackedPose();
 		ss << "pos:" << pose.getTranslation() << endl;
 		ss << "rot:" << pose.getRotate().getEuler();
