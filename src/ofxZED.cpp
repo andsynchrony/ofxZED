@@ -19,8 +19,8 @@ namespace ofxZED
 		init_params.depth_mode = mode;
 		init_params.enable_right_side_measure = true;
 		init_params.input.setFromCameraID(cameraID);
-		init_params.coordinate_units = sl::UNIT_METER;
-		init_params.coordinate_system = sl::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP;
+		init_params.coordinate_units = sl::UNIT::METER;
+		init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
 	
 		bUseColorImage = useColorImage;
 		bUseDepthImage = useDepthImage;
@@ -31,9 +31,9 @@ namespace ofxZED
 		zed = new sl::Camera();
 		ofLog() << "Resolution Mode:" << resolution << std::endl;
 
-		sl::ERROR_CODE zederr = zed->open(init_params);
+		auto zederr = zed->open(init_params);
 
-		if (zederr != sl::SUCCESS)
+		if (zederr != sl::ERROR_CODE::SUCCESS)
 		{
 			close();
 			ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
@@ -47,10 +47,10 @@ namespace ofxZED
 
 		if (bUseTracking) {
 			// Enable positional tracking with default parameters
-			sl::TrackingParameters tracking_parameters;
-			zederr = zed->enableTracking(tracking_parameters);
+			sl::PositionalTrackingParameters tracking_parameters;
+			zederr = zed->enablePositionalTracking(tracking_parameters);
 
-			if (zederr != sl::SUCCESS)
+			if (zederr != sl::ERROR_CODE::SUCCESS)
 			{
 				close();
 				ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
@@ -58,22 +58,22 @@ namespace ofxZED
 			}
 		}
 
-		zedWidth = zed->getResolution().width;
-		zedHeight = zed->getResolution().height;
+		zedWidth = zed->getCameraInformation().camera_resolution.width;
+		zedHeight = zed->getCameraInformation().camera_resolution.height;
 
 		ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
 		ofLog() << "FPS: " << getCurrentFPS() << endl;
 
 		colorLeftTexture.allocate(zedWidth, zedHeight, GL_RGBA);
 		colorRightTexture.allocate(zedWidth, zedHeight, GL_RGBA);
-		depthLeftTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE32F_ARB);
-		depthRightTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE32F_ARB);
+		depthLeftTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE);
+		depthRightTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE);
 
 		bRequestNewFrame = true;
 		if (bUseDepthImage)
 		{
 			rt.enable_depth = true;
-			rt.sensing_mode = sl::SENSING_MODE::SENSING_MODE_FILL;
+			rt.sensing_mode = sl::SENSING_MODE::FILL;
 		}
 		else if (bUseColorImage)
 		{
@@ -91,7 +91,7 @@ namespace ofxZED
 
 		if (zed) {
 			if (bUseTracking) {
-				zed->disableTracking();
+				zed->disablePositionalTracking();
 			}
 			zed->close();
 			zed = nullptr;
@@ -112,24 +112,24 @@ namespace ofxZED
 	void Camera::threadedFunction()
 	{
 		while (isThreadRunning()) {
-			sl::ERROR_CODE zederr = sl::ERROR_CODE_NOT_A_NEW_FRAME;
+			sl::ERROR_CODE zederr = sl::ERROR_CODE::SUCCESS;
 			if (bRequestNewFrame && bZedReady) {
 				zederr = zed->grab(rt);
 
 				if (lock()) {
-					if (zederr == sl::ERROR_CODE_CAMERA_NOT_DETECTED) {
+					if (zederr == sl::ERROR_CODE::CAMERA_NOT_DETECTED) {
 						bDisconnected = true;
 						bRequestNewFrame = false;
 						ofSleepMillis(10);
 					}
-					else if (zederr == sl::SUCCESS) {
-						cameraTimestamp = zed->getTimestamp(sl::TIME_REFERENCE_IMAGE);
+					else if (zederr == sl::ERROR_CODE::SUCCESS) {
+						cameraTimestampBack = zed->getTimestamp(sl::TIME_REFERENCE::IMAGE);
 
 						if (bUseTracking) {
 							trackingState = zed->getPosition(pose);
 						}
 						else {
-							trackingState = sl::TRACKING_STATE_OFF;
+							trackingState = sl::POSITIONAL_TRACKING_STATE::OFF;
 						}
 
 						bNewBuffer = true;
@@ -161,14 +161,14 @@ namespace ofxZED
 			if (lock()) {
 				if (bUseColorImage) {
 					{
-						auto ret = zed->retrieveImage(this->cl, sl::VIEW_LEFT);
-						if (ret == sl::SUCCESS) {
+						auto ret = zed->retrieveImage(this->cl, sl::VIEW::LEFT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
 							colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
 					{
-						auto ret = zed->retrieveImage(this->cr, sl::VIEW_RIGHT);
-						if (ret == sl::SUCCESS) {
+						auto ret = zed->retrieveImage(this->cr, sl::VIEW::RIGHT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
 							colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
@@ -176,8 +176,8 @@ namespace ofxZED
 
 				if (bUseDepthImage) {
 					{
-						auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE_DEPTH);
-						if (ret == sl::SUCCESS) {
+						auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE::DEPTH);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
 							depthLeftTexture.loadData(this->dl.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
 						}
 						else {
@@ -185,8 +185,8 @@ namespace ofxZED
 						}
 					}
 					{
-						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE_DEPTH_RIGHT);
-						if (ret == sl::SUCCESS) {
+						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE::DEPTH_RIGHT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
 							depthRightTexture.loadData(this->dr.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
 						}
 						else {
@@ -194,6 +194,7 @@ namespace ofxZED
 						}
 					}
 				}
+				cameraTimestamp = cameraTimestampBack;
 				unlock();
 				bNewBuffer = false;
 				bRequestNewFrame = true;

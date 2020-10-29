@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include <sl_zed/Camera.hpp>
+#include <sl/Camera.hpp>
 
 namespace ofxZED
 {
@@ -92,8 +92,8 @@ namespace ofxZED
 			bool useDepthImage = true, 
 			bool useTracking = true,
 			int cameraID = 0,
-			sl::DEPTH_MODE mode = sl::DEPTH_MODE::DEPTH_MODE_PERFORMANCE,
-			sl::RESOLUTION resolution = sl::RESOLUTION::RESOLUTION_HD720, 
+			sl::DEPTH_MODE mode = sl::DEPTH_MODE::ULTRA,
+			sl::RESOLUTION resolution = sl::RESOLUTION::HD720,
 			float fps = 0.0);
 		void close();
 		void update();
@@ -113,7 +113,7 @@ namespace ofxZED
 		sl::Camera* getZedCamera() { return zed; }
 
 		ofMatrix4x4 getTrackedPose() const { return toOf(pose); }
-	protected:
+	public:
 		void threadedFunction() override;
 
 		sl::Mat cl, cr, dl, dr;
@@ -136,8 +136,9 @@ namespace ofxZED
 		bool bDisconnected = false;
 
 		sl::RuntimeParameters rt;
-		sl::timeStamp cameraTimestamp;
-		sl::TRACKING_STATE trackingState;
+		sl::Timestamp cameraTimestampBack;
+		sl::Timestamp cameraTimestamp;
+		sl::POSITIONAL_TRACKING_STATE trackingState;
 		sl::Pose pose;
 	};
 }

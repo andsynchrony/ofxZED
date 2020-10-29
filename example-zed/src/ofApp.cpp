@@ -34,7 +34,9 @@ void main()
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	zed.init(true, true, true, 0);
+	ofSetFrameRate(60);
+
+	zed.init(true, true, true, 0, sl::DEPTH_MODE::PERFORMANCE);
 
 	depthShader.setupShaderFromSource(GL_FRAGMENT_SHADER, depthFragmentShader);
 	depthShader.linkProgram();

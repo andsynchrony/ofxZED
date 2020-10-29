@@ -7,6 +7,12 @@
 		<ClCompile Include="src\main.cpp">
 			<Filter>src</Filter>
 		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\..\addons\ofxZED\src\ofxZED.cpp">
 			<Filter>addons\ofxZED\src</Filter>
 		</ClCompile>
@@ -36,20 +42,11 @@
 		<Filter Include="addons\ofxZED\libs\ZED\include\sl">
 			<UniqueIdentifier>{BD492871-01AD-EB0B-0BB0-EF1B}</UniqueIdentifier>
 		</Filter>
-		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core">
-			<UniqueIdentifier>{56C9DABD-B19E-5D79-E103-F034}</UniqueIdentifier>
-		</Filter>
-		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core\mapping">
-			<UniqueIdentifier>{C64EEEE4-33F4-66A2-7E38-8C9A}</UniqueIdentifier>
-		</Filter>
-		<Filter Include="addons\ofxZED\libs\ZED\include\sl_core\utils">
-			<UniqueIdentifier>{11A22ECC-B057-C00E-BE2B-E9FE}</UniqueIdentifier>
-		</Filter>
-		<Filter Include="addons\ofxZED\libs\ZED\include\sl_zed">
-			<UniqueIdentifier>{AA89F54A-AF2B-6022-E630-9A92}</UniqueIdentifier>
-		</Filter>
 	</ItemGroup>
 	<ItemGroup>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
 		<ClInclude Include="src\ofApp.h">
 			<Filter>src</Filter>
 		</ClInclude>
@@ -58,33 +55,6 @@
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Camera.hpp">
 			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Core.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\defines.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Mesh.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\types.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping\Mesh.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl_core\mapping</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\Core.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl_core\utils</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\types.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl_core\utils</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\Camera.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl_zed</Filter>
-		</ClInclude>
-		<ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\defines.hpp">
-			<Filter>addons\ofxZED\libs\ZED\include\sl_zed</Filter>
 		</ClInclude>
 	</ItemGroup>
 	<ItemGroup>

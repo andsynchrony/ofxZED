@@ -55,46 +55,46 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\libs\openFrameworksCompiled\project\vs\openFrameworksRelease.props" />
-    <Import Project="..\CUDA 9.1.props" />
+    <Import Project="../../../addons\ofxZED\CUDA 11.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\libs\openFrameworksCompiled\project\vs\openFrameworksRelease.props" />
-    <Import Project="..\CUDA 9.1.props" />
+    <Import Project="../../../addons\ofxZED\CUDA 11.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\libs\openFrameworksCompiled\project\vs\openFrameworksDebug.props" />
-    <Import Project="..\CUDA 9.1.props" />
+    <Import Project="../../../addons\ofxZED\CUDA 11.0.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\..\libs\openFrameworksCompiled\project\vs\openFrameworksDebug.props" />
-    <Import Project="..\CUDA 9.1.props" />
+    <Import Project="../../../addons\ofxZED\CUDA 11.0.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>bin\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_debug</TargetName>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>bin\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_debug</TargetName>
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>bin\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>bin\</OutDir>
-    <IntDir>obj\$(Configuration)\</IntDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -104,9 +104,9 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\include\sl_core;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils;..\..\..\addons\ofxZED\libs\ZED\include\sl_zed;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -124,16 +124,16 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\include\sl_core;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils;..\..\..\addons\ofxZED\libs\ZED\include\sl_zed;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalDependencies>%(AdditionalDependencies);sl_core64.lib;sl_input64.lib;sl_zed64.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);sl_zed64.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
@@ -144,10 +144,10 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\include\sl_core;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils;..\..\..\addons\ofxZED\libs\ZED\include\sl_zed;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -167,9 +167,10 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\include\sl_core;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping;..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils;..\..\..\addons\ofxZED\libs\ZED\include\sl_zed;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);src;..\..\..\addons\ofxZED\libs;..\..\..\addons\ofxZED\libs\ZED;..\..\..\addons\ofxZED\libs\ZED\bin;..\..\..\addons\ofxZED\libs\ZED\bin\vs;..\..\..\addons\ofxZED\libs\ZED\bin\vs\x64;..\..\..\addons\ofxZED\libs\ZED\include;..\..\..\addons\ofxZED\libs\ZED\include\sl;..\..\..\addons\ofxZED\libs\ZED\lib;..\..\..\addons\ofxZED\libs\ZED\lib\vs;..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64;..\..\..\addons\ofxZED\src</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -178,7 +179,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <AdditionalDependencies>%(AdditionalDependencies);sl_core64.lib;sl_input64.lib;sl_zed64.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);sl_zed64.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);..\..\..\addons\ofxZED\libs\ZED\lib\vs\x64</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent />
@@ -192,15 +193,6 @@
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="..\..\..\addons\ofxZED\src\ofxZED.h" />
     <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Camera.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Core.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\defines.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\Mesh.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl\types.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\mapping\Mesh.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\Core.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_core\utils\types.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\Camera.hpp" />
-    <ClInclude Include="..\..\..\addons\ofxZED\libs\ZED\include\sl_zed\defines.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
