@@ -66,8 +66,6 @@ namespace ofxZED
 
 		colorLeftTexture.allocate(zedWidth, zedHeight, GL_RGBA);
 		colorRightTexture.allocate(zedWidth, zedHeight, GL_RGBA);
-		depthLeftTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE);
-		depthRightTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE);
 
 		bRequestNewFrame = true;
 		if (bUseDepthImage)
@@ -178,7 +176,9 @@ namespace ofxZED
 					{
 						auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE::DEPTH);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							depthLeftTexture.loadData(this->dl.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
+							ofFloatPixels tmp;
+							tmp.setFromExternalPixels(this->dl.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthLeftTexture.loadData(tmp);
 						}
 						else {
 							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
@@ -187,7 +187,9 @@ namespace ofxZED
 					{
 						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE::DEPTH_RIGHT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							depthRightTexture.loadData(this->dr.getPtr<float>(), zedWidth, zedHeight, GL_LUMINANCE);
+							ofFloatPixels tmp;
+							tmp.setFromExternalPixels(this->dr.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthRightTexture.loadData(tmp);
 						}
 						else {
 							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
