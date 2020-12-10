@@ -91,6 +91,7 @@ namespace ofxZED
 			bool useColorImage = true, 
 			bool useDepthImage = true, 
 			bool useTracking = true,
+			bool bUseSensor = false,
 			int cameraID = 0,
 			sl::DEPTH_MODE mode = sl::DEPTH_MODE::ULTRA,
 			sl::RESOLUTION resolution = sl::RESOLUTION::HD720,
@@ -121,6 +122,7 @@ namespace ofxZED
 		bool bUseColorImage = false;
 		bool bUseDepthImage = false;
 		bool bUseTracking = false;
+		bool bUseSensor = false;
 		bool bNewFrame = false;
 		uint64_t lastNewFrame = 0;
 
@@ -140,6 +142,20 @@ namespace ofxZED
 		sl::Timestamp cameraTimestamp;
 		sl::POSITIONAL_TRACKING_STATE trackingState;
 		sl::Pose pose;
+
+		class SensorThread : public ofThread
+		{
+			Camera* parent_ = nullptr;
+			vector<sl::SensorsData::IMUData> imuBack;
+			void threadedFunction() override;
+		public:
+			SensorThread(Camera* parent);
+			void update(vector<sl::SensorsData::IMUData>& imuMainThread);
+		};
+
+		shared_ptr<SensorThread> sensorThread;
+
+		vector<sl::SensorsData::IMUData> imu;
 	};
 }
 

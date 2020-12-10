@@ -33,7 +33,7 @@ void ofApp::setup()
 {
 	ofSetFrameRate(60);
 
-	zed.init(true, true, true, 0, sl::DEPTH_MODE::ULTRA);
+	zed.init(true, true, true, true, 0, sl::DEPTH_MODE::PERFORMANCE, sl::RESOLUTION::HD720, 0.0);
 
 	depthShader.setupShaderFromSource(GL_FRAGMENT_SHADER, depthFragmentShader);
 	depthShader.linkProgram();
