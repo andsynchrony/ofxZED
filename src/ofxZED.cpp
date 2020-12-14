@@ -1,168 +1,273 @@
 #include "ofxZED.h"
-
-ofxZED::ofxZED()
+namespace ofxZED
 {
-}
-
-ofxZED::~ofxZED()
-{
-}
-
-void ofxZED::init(bool useColorImage, bool useDepthImage, int cameraID, sl::zed::MODE mode, sl::zed::ZEDResolution_mode resolution, float fps)
-{
-	bUseColorImage = useColorImage;
-	bUseDepthImage = useDepthImage;
-
-	ofLog() << "Initializing ZED camera." << std::endl;
-
-	zed = new sl::zed::Camera(resolution, fps);
-	ofLog() << "Resolution Mode:" << resolution << std::endl;
-
-	sl::zed::ERRCODE zederr = zed->init(mode, cameraID, true, false, false);
-
-	if (zederr != sl::zed::SUCCESS)
+	Camera::Camera()
 	{
-		ofLog() << "ERROR: " << sl::zed::errcode2str(zederr) << endl;
-		ofExit();
-	}
-	else
-	{
-		ofLog() << "ZED initialized." << endl;
-
 	}
 
-	zedWidth = zed->getImageSize().width;
-	zedHeight = zed->getImageSize().height;
-
-	ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
-	ofLog() << "FPS: " << getCurrentFPS() << endl;
-
-	colorBuffer = new uchar[zedWidth * zedHeight * 3];
-	depthBuffer = new uchar[zedWidth * zedHeight];
-
-	colorTexture.allocate(zedWidth, zedHeight, GL_RGB, false);
-	depthTexture.allocate(zedWidth, zedHeight, GL_LUMINANCE, false);
-}
-
-ofVec2f ofxZED::getImageDimensions()
-{
-	return ofVec2f(zedWidth, zedHeight);
-}
-
-float ofxZED::getCurrentFPS() 
-{
-	return zed->getCurrentFPS();
-}
-
-
-void ofxZED::update()
-{
-	if (bUseDepthImage)
+	Camera::~Camera()
 	{
-		zed->grab(sl::zed::SENSING_MODE::RAW, true, true);
-	}
-	else if(bUseColorImage)
-	{
-		zed->grab(sl::zed::SENSING_MODE::FULL, false, false);
+		close();
 	}
 
-	if(bUseColorImage)
-		colorTexture.loadData(getColorBuffer(), zedWidth, zedHeight, GL_RGB);
-
-	if(bUseDepthImage)
-	depthTexture.loadData(getDepthBuffer(), zedWidth, zedHeight, GL_LUMINANCE);
-}
-
-void ofxZED::fillColorBuffer()
-{
-	sl::zed::Mat zedView = zed->retrieveImage(sl::zed::SIDE::LEFT);
-	/*
-	// wrong color / pixel format, unfunctional for now.
-	memcpy(imageBuffer, zedView.data, zedWidth * zedHeight * 3 * sizeof(sl::uchar));
-	// instead using:
-	*/
-	for (int y = 0; y < zedHeight; y++)
+	void Camera::init(bool useColorImage, bool useDepthImage, bool useTracking, bool useSensor, 
+		int cameraID, sl::DEPTH_MODE mode, sl::RESOLUTION resolution, float fps)
 	{
-		for (int x = 0; x < zedWidth; x++)
+		try
 		{
-			sl::uchar3 pixel = zedView.getValue(x, y);
-			int index = 3 * (x + y * zedWidth);
+			// Set configuration parameters
+			sl::InitParameters init_params;
+			init_params.camera_resolution = resolution;
+			init_params.camera_fps = fps;
+			init_params.depth_mode = mode;
+			init_params.enable_right_side_measure = true;
+			init_params.input.setFromCameraID(cameraID);
+			init_params.coordinate_units = sl::UNIT::METER;
+			init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
+			init_params.sensors_required = bUseSensor;
 
-			colorBuffer[index + 0] = pixel.c3;
-			colorBuffer[index + 1] = pixel.c2;
-			colorBuffer[index + 2] = pixel.c1;
-			
+			bUseColorImage = useColorImage;
+			bUseDepthImage = useDepthImage;
+			bUseTracking = useTracking;
+			bUseSensor = useSensor;
+
+			ofLog() << "Initializing ZED camera." << std::endl;
+
+			zed = new sl::Camera();
+			ofLog() << "Resolution Mode:" << resolution << std::endl;
+
+			auto zederr = zed->open(init_params);
+
+			if (zederr != sl::ERROR_CODE::SUCCESS)
+			{
+				close();
+				ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
+				return;
+			}
+			else
+			{
+				bZedReady = true;
+				ofLog() << "ZED initialized." << endl;
+			}
+
+			if (bUseTracking) {
+				// Enable positional tracking with default parameters
+				sl::PositionalTrackingParameters tracking_parameters;
+				zederr = zed->enablePositionalTracking(tracking_parameters);
+
+				if (zederr != sl::ERROR_CODE::SUCCESS)
+				{
+					close();
+					ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
+					return;
+				}
+			}
+
+			zedWidth = zed->getCameraInformation().camera_resolution.width;
+			zedHeight = zed->getCameraInformation().camera_resolution.height;
+
+			ofLog() << "Resolution: " << zedWidth << ", " << zedHeight << endl;
+			ofLog() << "FPS: " << getCurrentFPS() << endl;
+
+			colorLeftTexture.allocate(zedWidth, zedHeight, GL_RGBA);
+			colorRightTexture.allocate(zedWidth, zedHeight, GL_RGBA);
+
+			bRequestNewFrame = true;
+			if (bUseDepthImage)
+			{
+				rt.enable_depth = true;
+				rt.sensing_mode = sl::SENSING_MODE::FILL;
+			}
+			else if (bUseColorImage)
+			{
+				rt.enable_depth = false;
+			}
+
+			startThread();
+
+			if (bUseSensor) {
+				sensorThread = make_shared<SensorThread>(this);
+				sensorThread->startThread();
+			}
+		}
+		catch (exception& err) {
+			cerr << err.what() << endl;
 		}
 	}
-	
-}
 
-
-int ofxZED::getDepthAtPoint(int x, int y) {
-	try {
-
-		cv::Mat depthMap(zedHeight, zedWidth, CV_32F);
-
-		slMat2cvMat(zed->retrieveMeasure(sl::zed::MEASURE::DEPTH)).copyTo(depthMap);
-
-		if (x >= 0 && y >= 0 && x < zedWidth && y < zedHeight) 
-		{
-			return depthMap.at<float>(y, x);
-		}
-		else
-		{
-			ofLog(OF_LOG_ERROR) << "ERROR: Out of Bounds. Image resolution is " << zedWidth << ", " << zedHeight << ". Pick a point within the frame." << std::endl;
-			return -1;
-		}
-	}
-	catch (int e) {
-		ofLog(OF_LOG_ERROR) << "Could not get depth at point. Error: " << e << std::endl;
-	}
-}
-
-void ofxZED::fillDepthBuffer()
-{
-	sl::zed::Mat zedView = zed->normalizeMeasure(sl::zed::MEASURE::DEPTH);
-	for (int y = 0; y < zedHeight; y++)
+	void Camera::close()
 	{
-		for (int x = 0; x < zedWidth; x++)
-		{
-			sl::uchar3 pixel = zedView.getValue(x, y);
-			
-			int index = (x + y * zedWidth);
-			depthBuffer[index] = pixel.c1;
+		if (isThreadRunning()) {
+			waitForThread(true);
+
+		}
+		if (bUseSensor) {
+			if (sensorThread && sensorThread->isThreadRunning()) {
+				sensorThread->waitForThread();
+				sensorThread.reset();
+			}
+		}
+
+		if (zed) {
+			if (bUseTracking) {
+				zed->disablePositionalTracking();
+			}
+			zed->close();
+			zed = nullptr;
+			bZedReady = false;
 		}
 	}
-}
 
-uchar * ofxZED::getColorBuffer()
-{
-	if (!bUseColorImage)
-		ofLogWarning() << "trying to access color buffer without setting useColorImage to true." << endl;
-	else
-		fillColorBuffer();
-	return colorBuffer;
-}
+	ofVec2f Camera::getImageDimensions()
+	{
+		return ofVec2f(zedWidth, zedHeight);
+	}
 
-uchar * ofxZED::getDepthBuffer()
-{
-	if (!bUseDepthImage)
-		ofLogWarning() << "trying to access depth buffer without setting useDepthImage to true." << endl;
-	else
-		fillDepthBuffer();
-	return depthBuffer;
-}
+	float Camera::getCurrentFPS() 
+	{
+		return zed->getCurrentFPS();
+	}
 
-ofTexture * ofxZED::getColorTexture()
-{
-	if (!bUseColorImage)
-		ofLogWarning() << "trying to access color buffer without setting useColorImage to true." << endl;
-	return &colorTexture;
-}
+	void Camera::threadedFunction()
+	{
+		while (isThreadRunning()) {
+			sl::ERROR_CODE zederr = sl::ERROR_CODE::SUCCESS;
+			if (bRequestNewFrame && bZedReady) {
+				zederr = zed->grab(rt);
 
-ofTexture * ofxZED::getDepthTexture()
-{
-	if (!bUseDepthImage)
-		ofLogWarning() << "trying to access depth buffer without setting useDepthImage to true." << endl;
-	return &depthTexture;
+				if (lock()) {
+					if (zederr == sl::ERROR_CODE::CAMERA_NOT_DETECTED) {
+						bDisconnected = true;
+						bRequestNewFrame = false;
+						ofSleepMillis(10);
+					}
+					else if (zederr == sl::ERROR_CODE::SUCCESS) {
+						cameraTimestampBack = zed->getTimestamp(sl::TIME_REFERENCE::IMAGE);
+
+						if (bUseTracking) {
+							trackingState = zed->getPosition(pose);
+						}
+						else {
+							trackingState = sl::POSITIONAL_TRACKING_STATE::OFF;
+						}
+
+						bNewBuffer = true;
+						bRequestNewFrame = false;
+					}
+					unlock();
+				}
+			}
+
+			ofSleepMillis(1);
+		}
+	}
+
+
+	void Camera::update()
+	{
+		bNewFrame = false;
+
+		if (bZedReady && bDisconnected) {
+			close();
+			bDisconnected = false;
+			return;
+		}
+
+		if (!bZedReady || !zed) {
+			return;
+		}
+
+		if (bNewBuffer) {
+			if (lock()) {
+				if (bUseColorImage) {
+					{
+						auto ret = zed->retrieveImage(this->cl, sl::VIEW::LEFT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
+							colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+						}
+					}
+					{
+						auto ret = zed->retrieveImage(this->cr, sl::VIEW::RIGHT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
+							colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+						}
+					}
+				}
+
+				if (bUseDepthImage) {
+					{
+						auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE::DEPTH);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
+							ofFloatPixels tmp;
+							tmp.setFromExternalPixels(this->dl.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthLeftTexture.loadData(tmp);
+						}
+						else {
+							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
+						}
+					}
+					{
+						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE::DEPTH_RIGHT);
+						if (ret == sl::ERROR_CODE::SUCCESS) {
+							ofFloatPixels tmp;
+							tmp.setFromExternalPixels(this->dr.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthRightTexture.loadData(tmp);
+						}
+						else {
+							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
+						}
+					}
+				}
+				cameraTimestamp = cameraTimestampBack;
+				unlock();
+				bNewBuffer = false;
+				bRequestNewFrame = true;
+				bNewFrame = true;
+				lastNewFrame = ofGetFrameNum();
+			}
+		}
+
+		if (bUseSensor) {
+			sensorThread->update(imu);
+			//if (ofGetFrameNum() % 60 == 0 && imu.size()) {
+			//	cerr << "[GLThread] " << imu.size() << "imu samples ";
+			//	cerr << ", ts: " << imu.back().timestamp.data_ns;
+			//	cerr << ", hz: " << imu.back().effective_rate;
+			//	cerr << ", gyro: " << imu.back().angular_velocity << endl;
+			//	auto pos = toOf(imu.back().pose).getTranslation();
+			//	cerr << pos << endl;
+			//}
+		}
+
+	}
+	Camera::SensorThread::SensorThread(Camera * parent)
+	{
+		this->parent_ = parent;
+	}
+	void Camera::SensorThread::threadedFunction()
+	{
+		uint64_t sensorCount = 0;
+		while (isThreadRunning()) {
+			sl::ERROR_CODE zederr = sl::ERROR_CODE::SUCCESS;
+			sl::SensorsData sensors_data;
+
+			if (lock()) {
+				parent_->zed->getSensorsData(sensors_data, sl::TIME_REFERENCE::CURRENT);
+				if (imuBack.size() == 0 || sensors_data.imu.timestamp.data_ns > imuBack.back().timestamp.data_ns)
+				{
+					imuBack.push_back(sensors_data.imu);
+					sensorCount++;
+				}
+				unlock();
+			}
+			std::this_thread::sleep_for(std::chrono::microseconds(100));
+		}
+	}
+	void Camera::SensorThread::update(vector<sl::SensorsData::IMUData>& imuMainThread)
+	{
+		lock();
+		imuBack.swap(imuMainThread);
+		imuBack.clear();
+		unlock();
+	}
 }
