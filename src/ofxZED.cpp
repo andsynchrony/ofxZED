@@ -11,7 +11,8 @@ namespace ofxZED
 	}
 
 	void Camera::init(bool useColorImage, bool useDepthImage, bool useTracking, bool useSensor, 
-		int cameraID, sl::DEPTH_MODE mode, sl::RESOLUTION resolution, float fps)
+		int cameraID, sl::DEPTH_MODE mode, sl::RESOLUTION resolution, float fps,
+		bool enableRightSideMeasure, float minDepth, float maxDepth)
 	{
 		try
 		{
@@ -20,16 +21,19 @@ namespace ofxZED
 			init_params.camera_resolution = resolution;
 			init_params.camera_fps = fps;
 			init_params.depth_mode = mode;
-			init_params.enable_right_side_measure = true;
+			init_params.enable_right_side_measure = enableRightSideMeasure;
 			init_params.input.setFromCameraID(cameraID);
 			init_params.coordinate_units = sl::UNIT::METER;
 			init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
 			init_params.sensors_required = bUseSensor;
+			init_params.depth_minimum_distance = minDepth;
+			init_params.depth_maximum_distance = maxDepth;
 
 			bUseColorImage = useColorImage;
 			bUseDepthImage = useDepthImage;
 			bUseTracking = useTracking;
 			bUseSensor = useSensor;
+			bEnableRightSideMeasure = enableRightSideMeasure;
 
 			ofLog() << "Initializing ZED camera." << std::endl;
 
@@ -128,6 +132,11 @@ namespace ofxZED
 		return zed->getCurrentFPS();
 	}
 
+	void Camera::setSensingMode(sl::SENSING_MODE mode)
+	{
+		rt.sensing_mode = mode;
+	}
+
 	void Camera::threadedFunction()
 	{
 		while (isThreadRunning()) {
@@ -185,15 +194,13 @@ namespace ofxZED
 						if (ret == sl::ERROR_CODE::SUCCESS) {
 							colorLeftPixels.setFromExternalPixels(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, 4);
 							colorLeftTexture.loadData(colorLeftPixels);
-							//colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
-					{
+					if (bEnableRightSideMeasure) {
 						auto ret = zed->retrieveImage(this->cr, sl::VIEW::RIGHT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
 							colorRightPixels.setFromExternalPixels(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, 4);
 							colorRightTexture.loadData(colorRightPixels);
-							//colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
 				}
@@ -209,7 +216,7 @@ namespace ofxZED
 							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
 						}
 					}
-					{
+					if (bEnableRightSideMeasure) {
 						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE::DEPTH_RIGHT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
 							depthRightPixels.setFromExternalPixels(this->dr.getPtr<float>(), zedWidth, zedHeight, 1);

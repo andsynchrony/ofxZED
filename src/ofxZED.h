@@ -95,7 +95,9 @@ namespace ofxZED
 			int cameraID = 0,
 			sl::DEPTH_MODE mode = sl::DEPTH_MODE::ULTRA,
 			sl::RESOLUTION resolution = sl::RESOLUTION::HD720,
-			float fps = 0.0);
+			float fps = 0.0,
+			bool enableRightSideMeasure = true,
+			float minDepth = -1.0, float maxDepth = -1.0);
 		void close();
 		void update();
 		ofVec2f getImageDimensions();
@@ -120,6 +122,8 @@ namespace ofxZED
 		sl::Camera* getZedCamera() { return zed; }
 
 		ofMatrix4x4 getTrackedPose() const { return toOf(pose); }
+
+		void setSensingMode(sl::SENSING_MODE mode);
 	public:
 		void threadedFunction() override;
 
@@ -129,6 +133,7 @@ namespace ofxZED
 		bool bUseDepthImage = false;
 		bool bUseTracking = false;
 		bool bUseSensor = false;
+		bool bEnableRightSideMeasure = false;
 		bool bNewFrame = false;
 		uint64_t lastNewFrame = 0;
 
