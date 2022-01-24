@@ -10,13 +10,17 @@
 
     <PropertyGroup>
         <CudaToolkitDir Condition="'$(CudaToolkitDir)' == ''">$(CudaToolkitCustomDir)</CudaToolkitDir>
-        <CudaToolkitVersion>v11.0</CudaToolkitVersion>
-        <CudaToolkitFullVersion>11.00.0000.0000</CudaToolkitFullVersion>
+        <CudToolkitMajorVersion>11</CudToolkitMajorVersion>
+        <CudaToolkitMinorVersion>4</CudaToolkitMinorVersion>
+        <CudaToolkitVersionedPath>$(CUDA_PATH_V11_4)</CudaToolkitVersionedPath>
+
+        <CudaToolkitVersion>v$(CudToolkitMajorVersion).$(CudaToolkitMinorVersion)</CudaToolkitVersion>
+        <CudaToolkitFullVersion>$(CudToolkitMajorVersion).$(CudaToolkitMinorVersion).0000.0000</CudaToolkitFullVersion>
     </PropertyGroup>
 
     <PropertyGroup>
         <!-- Check CUDA Toolkit versioned environment variable. -->
-        <CudaToolkitDir Condition="'$(CudaToolkitDir)' == ''">$(CUDA_PATH_V11_0)</CudaToolkitDir>
+        <CudaToolkitDir Condition="'$(CudaToolkitDir)' == ''">$(CudaToolkitVersionedPath)</CudaToolkitDir>
 
         <!-- Last, check the new CUDA Toolkit style/Nsight toolkit registry value. -->
         <CudaToolkitDir Condition="'$(CudaToolkitDir)' == ''">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\GPU Computing Toolkit\Cuda\$(CudaToolkitVersion)', 'InstallDir', null, RegistryView.Registry64, RegistryView.Registry32))</CudaToolkitDir>
@@ -117,6 +121,9 @@
             <HostDebugInfo Condition="'$(Configuration)' == 'Debug'">true</HostDebugInfo>
             <HostDebugInfo Condition="'$(Configuration)' != 'Debug'">false</HostDebugInfo>
             <FastMath>false</FastMath>
+
+            <DebugInformationFormat Condition="'$(Configuration)' == 'Release'">None</DebugInformationFormat>
+            <DebugInformationFormat Condition="'$(Configuration)' != 'Release'">ProgramDatabase</DebugInformationFormat>
             <Optimization>InheritFromHost</Optimization>
             <Runtime>InheritFromHost</Runtime>
             <RuntimeChecks>InheritFromHost</RuntimeChecks>
@@ -139,14 +146,14 @@
             <VCBinDir Condition="'$(Platform)' == 'x64'   AND '$(CudaPreferredToolArchitecture)' == 'x64'">$(VC_ExecutablePath_x64_x64)</VCBinDir>
             <VCBinDir Condition="'$(Platform)' == 'x64'   AND '$(CudaPreferredToolArchitecture)' == 'x64' AND '%(VCBinDir)' == ''">$(VCInstallDir)bin\amd64</VCBinDir>
 
-            <BaseCommandLineTemplate>-ccbin "%(VCBinDir)" -x cu [GenerateRelocatableDeviceCode] [ExtensibleWholeProgramCompilation] [Include] [RequiredIncludes] [InterleaveSourceInPTX] [GPUDebugInfo] [GenerateLineInfo] [Keep] [KeepDir] [MaxRegCount] [PtxAsOptionV] [TargetMachinePlatform] [NvccCompilation] [CudaRuntime] [AdditionalOptions]</BaseCommandLineTemplate>
+            <BaseCommandLineTemplate>-ccbin "%(VCBinDir)" -x cu [GenerateRelocatableDeviceCode] [ExtensibleWholeProgramCompilation] [Include] [RequiredIncludes] [InterleaveSourceInPTX] [GPUDebugInfo] [GenerateLineInfo] [Keep] [KeepDir] [FastMath] [MaxRegCount] [PtxAsOptionV] [TargetMachinePlatform] [NvccCompilation] [CudaRuntime] [AdditionalOptions]</BaseCommandLineTemplate>
             <BuildCommandLineTemplate>--use-local-env</BuildCommandLineTemplate>
             <BuildDynamicCommandLineTemplate>[CodeGeneration]</BuildDynamicCommandLineTemplate>
             <CleanCommandLineTemplate>-clean</CleanCommandLineTemplate>
-            <HostCommandLineTemplate>-Xcompiler &quot;/EHsc [Warning] /nologo [Optimization] [ProgramDataBaseFileName] $(CudaForceSynchronousPdbWrites) /Zi [RuntimeChecks] [Runtime] [TypeInfo]&quot;</HostCommandLineTemplate>
+            <HostCommandLineTemplate>-Xcompiler &quot;/EHsc [Warning] /nologo [Optimization] [ProgramDataBaseFileName] $(CudaForceSynchronousPdbWrites) [DebugInformationFormat] [RuntimeChecks] [Runtime] [TypeInfo]&quot;</HostCommandLineTemplate>
 
             <DriverApiCommandLineTemplate>%(BaseCommandLineTemplate) [CompileOut] "%(FullPath)"</DriverApiCommandLineTemplate>
-            <RuntimeApiCommandLineTemplate>%(BaseCommandLineTemplate) [HostDebugInfo] [Emulation] [FastMath] [Defines] %(HostCommandLineTemplate) [CompileOut] "%(FullPath)"</RuntimeApiCommandLineTemplate>
+            <RuntimeApiCommandLineTemplate>%(BaseCommandLineTemplate) [HostDebugInfo] [Emulation] [Defines] %(HostCommandLineTemplate) [CompileOut] "%(FullPath)"</RuntimeApiCommandLineTemplate>
 
             <CommandLineTemplate>
 # (Approximate command-line.  Settings inherited from host are not visible below.)
@@ -180,6 +187,8 @@ set CUDAFE_FLAGS=--sdk_dir "$(WindowsSdkDir)"
             <UseHostLibraryDependencies>true</UseHostLibraryDependencies>
 
             <GPUDebugInfo>InheritFromProject</GPUDebugInfo>
+            <DebugInformationFormat Condition="'$(Configuration)' == 'Release'">None</DebugInformationFormat>
+            <DebugInformationFormat Condition="'$(Configuration)' != 'Release'">ProgramDatabase</DebugInformationFormat>
             <Optimization>InheritFromProject</Optimization>
 
             <!-- Implicitly inherited from the project via @(CudaCompile) -->
@@ -192,7 +201,7 @@ set CUDAFE_FLAGS=--sdk_dir "$(WindowsSdkDir)"
 
             <Inputs></Inputs>
 
-            <HostCommandLineTemplate>-Xcompiler &quot;/EHsc [Warning] /nologo [Optimization] /Zi [ProgramDataBaseFileName] [RuntimeChecks] [Runtime] [TypeInfo]&quot;</HostCommandLineTemplate>
+            <HostCommandLineTemplate>-Xcompiler &quot;/EHsc [Warning] /nologo [Optimization] [ProgramDataBaseFileName] [DebugInformationFormat] [RuntimeChecks] [Runtime] [TypeInfo]&quot;</HostCommandLineTemplate>
             <LinkCommandLineTemplate>"$(CudaToolkitNvccPath)" -dlink [LinkOut] %(HostCommandLineTemplate) [AdditionalLibraryDirectories] [AdditionalDependencies] [AdditionalOptions] [CodeGeneration] [GPUDebugInfo] [TargetMachinePlatform] [Inputs]</LinkCommandLineTemplate>
             <CommandLineTemplate>
 # (Approximate command-line.  Settings inherited from host are not visible below.)

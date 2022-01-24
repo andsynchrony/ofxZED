@@ -79,6 +79,7 @@
 #include <sstream>
 #include <thread>
 #include <vector>
+#include <array>
 #include <map>
 
 #include <cuda.h>
@@ -87,7 +88,7 @@
 #include <device_launch_parameters.h>
 
 
-#if !defined(NDEBUG) && !defined(ALLOW_BUILD_DEBUG)
+#if defined(_DEBUG) && !defined(ALLOW_BUILD_DEBUG)
 #ifdef _MSC_VER
 #pragma message("WARNING : 'Debug' builds are not supported since this library was built in 'Release', 'RelWithDebInfo' should be preferred to avoid crashes and memory issues")
 #else
@@ -186,9 +187,7 @@ namespace sl {
         size_t width; /**< array width in pixels  */
         size_t height; /**< array height in pixels*/
 
-        Resolution(size_t w_ = 0, size_t h_ = 0) {
-            width = w_;
-            height = h_;
+        Resolution(size_t w_ = 0, size_t h_ = 0) : width(w_), height(h_) {
         }
 
         /**
@@ -228,11 +227,7 @@ namespace sl {
         size_t width; /**< width of the rectangle in pixels.*/
         size_t height; /**< height of the rectangle in pixels.*/
 
-        Rect(size_t x_ = 0, size_t y_ = 0, size_t w_ = 0, size_t h_ = 0) {
-            x = x_;
-            y = y_;
-            width = w_;
-            height = h_;
+        Rect(size_t x_ = 0, size_t y_ = 0, size_t w_ = 0, size_t h_ = 0) : x(x_), y(y_), width(w_), height(h_) {
         }
 
         /**
@@ -323,7 +318,9 @@ namespace sl {
         METER, /**< International System, 1 METER */
         INCH, /**< Imperial Unit, 1/12 FOOT */
         FOOT, /**< Imperial Unit, 1 FOOT */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -348,7 +345,9 @@ namespace sl {
         RIGHT_HANDED_Z_UP, /**< Right-Handed with Z pointing up and Y forward. Used in 3DSMax. */
         LEFT_HANDED_Z_UP, /**< Left-Handed with Z axis pointing up and X forward. Used in Unreal Engine. */
         RIGHT_HANDED_Z_UP_X_FWD, /**< Right-Handed with Z pointing up and X forward. Used in ROS (REP 103). */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -370,7 +369,8 @@ namespace sl {
         NO_GPU_COMPATIBLE, /**< No GPU found or CUDA capability of the device is not supported.*/
         NOT_ENOUGH_GPU_MEMORY, /**< Not enough GPU memory for this depth mode, try a different mode (such as PERFORMANCE), or increase the minimum depth value (see InitParameters::depth_minimum_distance).*/
         CAMERA_NOT_DETECTED, /**< The ZED camera is not plugged or detected.*/
-        SENSORS_NOT_AVAILABLE, /**< a ZED-M or ZED2 camera is detected but the sensors (imu,barometer...) cannot be opened. Only for ZED-M or ZED2 devices*/
+        SENSORS_NOT_INITIALIZED, /**< The MCU that controls the sensors module has an invalid Serial Number. You can try to recover it launching the 'ZED Diagnostic' tool from the command line with the option '-r'.*/
+        SENSORS_NOT_AVAILABLE, /**< a ZED-M or ZED2/2i camera is detected but the sensors (imu,barometer...) cannot be opened. Only for ZED-M or ZED2/2i devices. Unplug/replug is required*/
         INVALID_RESOLUTION, /**< In case of invalid resolution parameter, such as a upsize beyond the original image size in Camera::retrieveImage */
         LOW_USB_BANDWIDTH, /**< This issue can occurs when you use multiple ZED or a USB 2.0 port (bandwidth issue).*/
         CALIBRATION_FILE_NOT_AVAILABLE, /**< ZED calibration file is not found on the host machine. Use ZED Explorer or ZED Calibration to get one.*/
@@ -396,8 +396,11 @@ namespace sl {
         NO_GPU_DETECTED, /**< No GPU found, CUDA is unable to list it. Can be a driver/reboot issue.*/
         PLANE_NOT_FOUND, /**< Plane not found, either no plane is detected in the scene, at the location or corresponding to the floor, or the floor plane doesn't match the prior given*/
         MODULE_NOT_COMPATIBLE_WITH_CAMERA, /**< The Object detection module is only compatible with the ZED 2*/
-        MOTION_SENSORS_REQUIRED, /**< The module needs the sensors to be enabled (see InitParameters::disable_sensors) */
+        MOTION_SENSORS_REQUIRED, /**< The module needs the sensors to be enabled (see InitParameters::sensors_required) */
+        MODULE_NOT_COMPATIBLE_WITH_CUDA_VERSION, /**< The module needs a newer version of CUDA */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -428,7 +431,10 @@ namespace sl {
         ZED, /**< Defines ZED Camera model */
         ZED_M, /**<  Defines ZED Mini (ZED-M) Camera model */
         ZED2, /**< Defines ZED 2 Camera model */
+        ZED2i, /**< Defines ZED 2i Camera model */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -448,7 +454,9 @@ namespace sl {
         USB, /**< USB input mode  */
         SVO, /**<  SVO file input mode */
         STREAM, /**< STREAM input mode (requires to use enableStreaming()/disableStreaming() on the "sender" side) */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -467,7 +475,9 @@ namespace sl {
     enum class CAMERA_STATE {
         AVAILABLE, /**< Defines if the camera can be opened by the SDK */
         NOT_AVAILABLE, /**<  Defines if the camera is already opened and unavailable*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -484,8 +494,6 @@ namespace sl {
    \brief Properties of a camera
 
    \note A camera_model MODEL::ZED_M with an id '-1' can be due to an inverted USB-C cable.
-
-   \warning Experimental on Windows.
      */
     struct DeviceProperties {
         /**
@@ -531,7 +539,9 @@ namespace sl {
     enum class STREAMING_CODEC {
         H264, /**< AVCHD/H264 encoding used in image streaming.*/
         H265, /**<  HEVC/H265 encoding used in image streaming.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     /**
@@ -584,7 +594,9 @@ namespace sl {
         GYROSCOPE, /**< Three axis Gyroscope sensor to measure the angular velocitiers. */
         MAGNETOMETER, /**< Three axis Magnetometer sensor to measure the orientation of the device respect to the earth magnetic field. */
         BAROMETER, /**< Barometer sensor to measure the atmospheric pressure. */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -607,7 +619,9 @@ namespace sl {
         HPA, /**< Atmospheric pressure [hPa]. */
         CELSIUS, /**< Temperature [°C]. */
         HERTZ, /**< Frequency [Hz]. */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -670,7 +684,9 @@ namespace sl {
             SERIAL,
             SVO_FILE,
             STREAM,
+            ///@cond SHOWHIDDEN 
             LAST
+            ///@endcond
         };
 
         INPUT_TYPE input_type = INPUT_TYPE::ID;
@@ -688,9 +704,16 @@ namespace sl {
      */
     enum class DETECTION_MODEL {
         MULTI_CLASS_BOX, /**< Any objects, bounding box based */
+        MULTI_CLASS_BOX_ACCURATE, /**< Any objects, bounding box based, more accurate but slower than the base model */
         HUMAN_BODY_FAST, /**<  Keypoints based, specific to human skeleton, real time performance even on Jetson or low end GPU cards */
         HUMAN_BODY_ACCURATE, /**<  Keypoints based, specific to human skeleton, state of the art accuracy, requires powerful GPU */
+        MULTI_CLASS_BOX_MEDIUM, /**< Any objects, bounding box based, compromise between accuracy and speed */
+        HUMAN_BODY_MEDIUM, /**<  Keypoints based, specific to human skeleton, compromise between accuracy and speed */
+        PERSON_HEAD_BOX, /**<  Bounding Box detector specialized in person heads, particulary well suited for crowded environments, the person localization is also improved */
+        CUSTOM_BOX_OBJECTS, /**< For external inference, using your own custom model and/or frameworks. This mode disables the internal inference engine, the 2D bounding box detection must be provided */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -841,7 +864,7 @@ namespace sl {
         static Matrix3f inverse(const Matrix3f &rotation);
 
         /**
-        \brief Sets the RotationArray to its transpose.
+        \brief Sets the Matrix3f to its transpose.
          */
         void transpose();
 
@@ -1203,7 +1226,7 @@ namespace sl {
         \brief returns the distance between two vector
          */
         inline _FCT_CPU_GPU_ float distance(const Vector2<T> &a, const Vector2<T> &b) {
-            return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
+            return sqrt(pow(a.x - b.x, static_cast<T> (2)) + pow(a.y - b.y, static_cast<T> (2)));
         }
 
         inline _FCT_CPU_GPU_ friend Vector2<T> operator+(const Vector2<T> &a, const Vector2<T> &b) {
@@ -1427,7 +1450,7 @@ namespace sl {
         \brief returns the distance between two vector
          */
         static inline _FCT_CPU_GPU_ float distance(const Vector3<T> &a, const Vector3<T> &b) {
-            return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
+            return sqrt(pow(a.x - b.x, static_cast<T> (2)) + pow(a.y - b.y, static_cast<T> (2)) + pow(a.z - b.z, static_cast<T> (2)));
         }
 
         /**
@@ -1695,7 +1718,7 @@ namespace sl {
         \brief returns the distance between two vector
          */
         static inline _FCT_CPU_GPU_ float distance(const Vector4<T> &a, const Vector4<T> &b) {
-            return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2) + pow(a.w - b.w, 2));
+            return sqrt(pow(a.x - b.x, static_cast<T> (2)) + pow(a.y - b.y, static_cast<T> (2)) + pow(a.z - b.z, static_cast<T> (2)) + pow(a.w - b.w, static_cast<T> (2)));
         }
 
         inline _FCT_CPU_GPU_ friend Vector4<T> operator-(const Vector4<T> &b) {
@@ -1817,6 +1840,10 @@ namespace sl {
 
 #ifndef uint4
     typedef Vector4<unsigned int> uint4;
+#endif
+
+#ifndef ushort1
+    typedef unsigned short ushort1;
 #endif
 
     /**
@@ -2168,7 +2195,8 @@ namespace sl {
         U8_C1, /**< unsigned char 1 channel.*/
         U8_C2, /**< unsigned char 2 channels.*/
         U8_C3, /**< unsigned char 3 channels.*/
-        U8_C4 /**< unsigned char 4 channels.*/
+        U8_C4, /**< unsigned char 4 channels.*/
+        U16_C1 /**< unsigned short 1 channel.*/
     };
 
     ///@cond SHOWHIDDEN
@@ -2182,15 +2210,15 @@ namespace sl {
     /**
     \class Mat
     \ingroup Core_group
-    \brief The Mat class can handle multiple matrix format from 1 to 4 channels, with different value types (float or uchar), and can be stored CPU and/or GPU side.
+    \brief The Mat class can handle multiple matrix formats from 1 to 4 channels, with different value types (float or uchar), and can be stored CPU and/or GPU side.
 
     \ref Mat is defined in a row-major order, it means that, for an image buffer, the entire first row is stored first, followed by the entire second row, and so on.
 
     The CPU and GPU buffer aren't automatically synchronized for performance reasons, you can use \ref updateCPUfromGPU / \ref updateGPUfromCPU to do it.
     If you are using the GPU side of the Mat object, you need to make sure to call \ref free before destroying the sl::Camera object.
-    The destruction of the sl::Camera object delete the CUDA context needed to free the GPU Mat memory.
+    The destruction of the sl::Camera object deletes the CUDA context needed to free the GPU Mat memory.
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Mat {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Mat {
     private:
         //  Array size.
         Resolution size;
@@ -2226,10 +2254,8 @@ namespace sl {
         bool memory_owner = false;
 
         //private
-        int castSLMat();
-
-        //private
         void ref(const Mat &mat);
+
     public:
         // Variable used in verbose mode to indicate which Mat is printing informations.
         // Default set to n/a to avoid empty string if not filled.
@@ -2362,7 +2388,7 @@ namespace sl {
 
         /**
         \brief Free the owned memory.
-        \param memory_type : specify whether you want to free the \ref MEM::CPU and/or \ref MEM::GPU memory.
+        \param memory_type : specifies whether you want to free the \ref MEM::CPU and/or \ref MEM::GPU memory.
          */
         void free(MEM memory_type = MEM::CPU | MEM::GPU);
 
@@ -2381,26 +2407,26 @@ namespace sl {
         \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
         \note If no CPU or GPU memory are available for this Mat, some are directly allocated.
-        \note If verbose sets, you have informations in case of failure.
+        \note If verbose is set to true, you have information in case of failure.
          */
         ERROR_CODE updateCPUfromGPU();
 
         /**
         \brief Uploads data from HOST (CPU) to DEVICE (GPU), if possible.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
         \note If no CPU or GPU memory are available for this Mat, some are directly allocated.
-        \note If verbose sets, you have informations in case of failure.
+        \note If verbose is set to true, you have information in case of failure.
          */
         ERROR_CODE updateGPUfromCPU();
 
         /**
         \brief Copies data an other Mat (deep copy).
         \param dst : the Mat where the data will be copied.
-        \param cpyType : specify the memories that will be used for the copy.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \param cpyType : specifies the memories that will be used for the copy.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
-        \note If the destination is not allocated or has a not a compatible \ref MAT_TYPE or \ref Resolution,
+        \note If the destination is not allocated or or doesn't have a compatible \ref MAT_TYPE or \ref Resolution,
         current memory is freed and new memory is directly allocated.
          */
         ERROR_CODE copyTo(Mat &dst, COPY_TYPE cpyType = COPY_TYPE::CPU_CPU) const;
@@ -2408,27 +2434,21 @@ namespace sl {
         /**
         \brief Copies data from an other Mat (deep copy).
         \param src : the Mat where the data will be copied from.
-        \param cpyType : specify the memories that will be used for the update.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \param cpyType : specifies the memories that will be used for the update.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
-        \note If the current Mat is not allocated or has a not a compatible \ref MAT_TYPE or \ref Resolution with the source,
+        \note If the current Mat is not allocated or doesn't have a compatible \ref MAT_TYPE or \ref Resolution with the source,
         current memory is freed and new memory is directly allocated.
          */
         ERROR_CODE setFrom(const Mat &src, COPY_TYPE cpyType = COPY_TYPE::CPU_CPU, cudaStream_t stream = 0);
 
         /**
-        \brief Reads an image from a file (only if \ref MEM::CPU is available on the current \ref Mat).
+        \brief Reads an image from a file.
 
         \param filePath : file path including the name and extension.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
-
-                \note Supported \ref MAT_TYPE are :
-                \ref MAT_TYPE::F32_C1 for PNG/PFM/PGM,
-                \ref MAT_TYPE::F32_C3 for PCD/PLY/VTK/XYZ,
-                \ref MAT_TYPE::F32_C4 for PCD/PLY/VTK/WYZ,
-                \ref MAT_TYPE::U8_C1 for PNG/JPG,
-                \ref MAT_TYPE::U8_C3 for PNG/JPG,
-                \ref MAT_TYPE::U8_C4 for PNG/JPG,
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+         
+         \note This function only support images such as JPG or PNG, and can't load float format such as PCD, PLY, etc
          */
         ERROR_CODE read(const String &filePath);
 
@@ -2440,7 +2460,7 @@ namespace sl {
         \param compression_level : level of compression between 0 (lowest compression == highest size == highest quality(jpg)) and 100 (highest compression == lowest size == lowest quality(jpg)).
         \note Specific/default value for compression_level = -1 : This will set the default quality for PNG(30) or JPEG(5).
         \note compression_level is only supported for U8_Cx \ref MAT_TYPE.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
         \note Supported \ref MAT_TYPE are : 
                 \ref MAT_TYPE::F32_C1 for PNG/PFM/PGM,
@@ -2455,7 +2475,7 @@ namespace sl {
         /**
         \brief Fills the Mat with the given value.
 
-        This function overwrite all the matrix.
+        This function overwrites all the matrix.
 
         \param value : the value to be copied all over the matrix.
         \param memory_type : defines which buffer to fill, CPU and/or GPU.
@@ -2467,11 +2487,11 @@ namespace sl {
 
         /**
         \brief Sets a value to a specific point in the matrix.
-        \param x : specify the column.
-        \param y : specify the row.
+        \param x : specifies the column.
+        \param y : specifies the row.
         \param value : the value to be set.
         \param memory_type : defines which memory will be updated.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
         \note This function is templated for \ref uchar1, \ref uchar2, \ref uchar3, \ref uchar4, \ref float1, \ref float2, \ref float3, \ref float4.
 
@@ -2482,10 +2502,10 @@ namespace sl {
 
         /**
         \brief Returns the value of a specific point in the matrix.
-        \param x : specify the column
-        \param y : specify the row
+        \param x : specifies the column
+        \param y : specifies the row
         \param memory_type : defines which memory should be read.
-        \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
+        \return \ref ERROR_CODE::SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
 
         \note This function is templated for \ref uchar1, \ref uchar2, \ref uchar3, \ref uchar4, \ref float1, \ref float2, \ref float3, \ref float4.
 
@@ -2544,7 +2564,7 @@ namespace sl {
 
         /**
         \brief Returns the CPU or GPU data pointer.
-        \param memory_type : specify whether you want \ref MEM::CPU or \ref MEM::GPU step.
+        \param memory_type : specifies whether you want \ref MEM::CPU or \ref MEM::GPU step.
         \return The pointer of the Mat data.
          */
         template <typename N>
@@ -2552,14 +2572,14 @@ namespace sl {
 
         /**
         \brief Returns the memory step in Bytes (the Bytes size of one pixel row).
-        \param memory_type : specify whether you want \ref MEM::CPU or \ref MEM::GPU step.
+        \param memory_type : specifies whether you want \ref MEM::CPU or \ref MEM::GPU step.
         \return The step in bytes of the specified memory.
          */
         size_t getStepBytes(MEM memory_type = MEM::CPU) const;
 
         /**
         \brief Returns the memory step in number of elements (the number of values in one pixel row).
-        \param memory_type : specify whether you want \ref MEM::CPU or \ref MEM::GPU step.
+        \param memory_type : specifies whether you want \ref MEM::CPU or \ref MEM::GPU step.
         \return The step in number of elements.
          */
         template <typename N>
@@ -2569,10 +2589,10 @@ namespace sl {
 
         /**
         \brief Returns the memory step in number of elements (the number of values in one pixel row).
-        \param memory_type : specify whether you want \ref MEM::CPU or \ref MEM::GPU step.
+        \param memory_type : specifies whether you want \ref MEM::CPU or \ref MEM::GPU step.
         \return The step in number of elements.
          */
-        inline size_t getStep(MEM memory_type = MEM::CPU)const {
+        inline size_t getStep(MEM memory_type = MEM::CPU) const {
             switch (data_type) {
                 case MAT_TYPE::F32_C1:
                     return getStep<sl::float1>(memory_type);
@@ -2590,6 +2610,10 @@ namespace sl {
                     return getStep<sl::uchar3>(memory_type);
                 case MAT_TYPE::U8_C4:
                     return getStep<sl::uchar4>(memory_type);
+                case MAT_TYPE::U16_C1:
+                    return getStep<sl::ushort1>(memory_type);
+                default:
+                    std::cout << "Type: " << data_type << " Not Supported" << std::endl;
             }
             return 0;
         }
@@ -2611,8 +2635,8 @@ namespace sl {
         }
 
         /**
-        \brief Return the informations about the Mat into a \ref String.
-        \return A string containing the Mat informations.
+        \brief Returns the information about the Mat into a \ref String.
+        \return A string containing the Mat information.
          */
         String getInfos();
 
@@ -2625,7 +2649,7 @@ namespace sl {
         }
 
         /**
-        \brief Returns whether the Mat is the owner of the memory it access.
+        \brief Returns whether the Mat is the owner of the memory it accesses.
 
         If not, the memory won't be freed if the Mat is destroyed.
         \return True if the Mat is owning its memory, else false.
@@ -2637,7 +2661,7 @@ namespace sl {
         /**
         \brief Duplicates Mat by copy (deep copy).
         \param src : the reference to the Mat to copy.
-         This function copies the data array(s), it mark the new Mat as the memory owner.
+         This function copies the data array(s), it marks the new Mat as the memory owner.
          */
         ERROR_CODE clone(const Mat &src);
 
@@ -2660,7 +2684,6 @@ namespace sl {
         static void swap(Mat &mat1, Mat &mat2);
     };
 
-
     ///@cond
     class SL_CORE_EXPORT Rotation;
     class SL_CORE_EXPORT Translation;
@@ -2673,7 +2696,7 @@ namespace sl {
     \ingroup PositionalTracking_group
     \brief Designed to contain rotation data of the positional tracking. It inherits from the generic \ref Matrix3f
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Rotation : public Matrix3f {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Rotation : public Matrix3f {
     public:
         /**
         \brief empty Rotation default constructor.
@@ -2727,13 +2750,13 @@ namespace sl {
 
         /**
         \brief Sets the Rotation from a rotation vector (using Rodrigues' transformation).
-        \param vec_rot : the  Rotation Vector.
+        \param vec_rot : the rotation Vector.
          */
         void setRotationVector(const float3 &vec_rot);
 
         /**
-        \brief Convert the Rotation as Euler angles
-        \param radian : Define if the angle in is radian or degree
+        \brief Converts the Rotation as Euler angles
+        \param radian : Defines if the angle in is radian or degree
         \return The Euler angles, as a \ref float3 representing the rotations around the X, Y and Z axes. (YZX convention)
          */
         float3 getEulerAngles(bool radian = true) const;
@@ -2741,7 +2764,7 @@ namespace sl {
         /**
         \brief Sets the Rotation from the Euler angles.
         \param euler_angles : The Euler angles, as a \ref float3
-        \param radian : Define if the angle in is radian or degree
+        \param radian : Defines if the angle in is radian or degree
          */
         void setEulerAngles(const float3 &euler_angles, bool radian = true);
     };
@@ -2755,7 +2778,7 @@ namespace sl {
     You can access the data with the 't' ptr or by element name as :
     tx, ty, tz  <-> | 0 1 2 |
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Translation : public float3 {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Translation : public float3 {
     public:
         /**
         \brief empty Translation default constructor.
@@ -2816,7 +2839,7 @@ namespace sl {
 
     \ref Orientation is a vector defined as [ox, oy, oz, ow].
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Orientation : public float4 {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Orientation : public float4 {
     public:
         /**
         \brief empty Orientation default constructor.
@@ -2878,17 +2901,15 @@ namespace sl {
          */
         Rotation getRotationMatrix() const;
 
+        /*@cond SHOWHIDDEN*/
         /**
         \brief Sets the orientation from a Rotation.
         \param rotation : the Rotation to be used.
 
         \deprecated See \ref setRotationMatrix
          */
-
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use setRotationMatrix instead") /* @endcond*/
-        inline void setRotation(const Rotation &rotation) {
-            setRotationMatrix(rotation);
-        }
+        SL_DEPRECATED("Use setRotationMatrix instead")
+        void setRotation(const Rotation &rotation);
 
         /**
         \brief Returns the current orientation as a Rotation.
@@ -2896,11 +2917,9 @@ namespace sl {
 
         \deprecated See \ref getRotationMatrix
          */
-
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use getRotationMatrix instead") /* @endcond*/
-        inline Rotation getRotation() const {
-            return getRotationMatrix();
-        }
+        SL_DEPRECATED("Use getRotationMatrix instead")
+        Rotation getRotation() const;
+        /*@endcond*/
 
         /**
         \brief Sets the current Orientation to identity.
@@ -2945,7 +2964,7 @@ namespace sl {
     It contains the orientation as well. It can be used to create any type of Matrix4x4 or \ref Matrix4f that must be specifically used for handling a rotation and position information (OpenGL, Tracking...)
     It inherits from the generic \ref Matrix4f
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Transform : public Matrix4f {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Transform : public Matrix4f {
     public:
         /**
         \brief Transform default constructor.
@@ -2991,6 +3010,7 @@ namespace sl {
          */
         Rotation getRotationMatrix() const;
 
+        /*@cond SHOWHIDDEN*/
         /**
         \brief Sets the rotation of the current Transform from an Rotation.
         \param rotation : the Rotation to be used.
@@ -2998,10 +3018,8 @@ namespace sl {
         \deprecated See \ref setRotationMatrix
          */
 
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use setRotationMatrix instead") /*@endcond*/
-        inline void setRotation(const Rotation &rotation) {
-            setRotationMatrix(rotation);
-        }
+        SL_DEPRECATED("Use setRotationMatrix instead")
+        void setRotation(const Rotation &rotation);
 
         /**
         \brief Returns the Rotation of the current Transform.
@@ -3010,11 +3028,9 @@ namespace sl {
 
         \deprecated See \ref getRotationMatrix
          */
-
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use getRotationMatrix instead") /*@endcond*/
-        inline Rotation getRotation() const {
-            return getRotationMatrix();
-        }
+        SL_DEPRECATED("Use getRotationMatrix instead")
+        Rotation getRotation() const;
+        /*@endcond*/
 
         /**
         \brief Sets the translation of the current Transform from an Translation.
@@ -3074,7 +3090,7 @@ namespace sl {
     \ingroup Depth_group
     \brief Intrinsic parameters of a camera.
 
-    Those information about the camera will be returned by \ref Camera::getCameraInformation().
+    That information about the camera will be returned by \ref Camera::getCameraInformation().
     
     \note Similar to the CalibrationParameters, those parameters are taken from the settings file (SNXXX.conf) and are modified during the sl::Camera::open call when running a self-calibration).
     Those parameters given after sl::Camera::open call, represent the camera matrix corresponding to rectified or unrectified images.
@@ -3086,7 +3102,7 @@ namespace sl {
         float fy; /**< Focal length in pixels along y axis. */
         float cx; /**< Optical center along x axis, defined in pixels (usually close to width/2). */
         float cy; /**< Optical center along y axis, defined in pixels (usually close to height/2). */
-        double disto[5]; /**< Distortion factor : [ k1, k2, p1, p2, k3 ]. Radial (k1,k2,k3) and Tangential (p1,p2) distortion.*/
+        double disto[12]; /**< Distortion factor : [ k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4]. Radial (k1, k2, k3, k4, k5, k6), Tangential (p1,p2) and Prism (s1, s2, s3, s4) distortion.*/
         float v_fov; /**< Vertical field of view, in degrees. */
         float h_fov; /**< Horizontal field of view, in degrees.*/
         float d_fov; /**< Diagonal field of view, in degrees.*/
@@ -3098,22 +3114,26 @@ namespace sl {
     \ingroup Depth_group
     \brief Intrinsic and Extrinsic parameters of the camera (translation and rotation).
 
-    Those information about the camera will be returned by \ref Camera::getCameraInformation().
+    That information about the camera will be returned by \ref Camera::getCameraInformation().
 
     \note The calibration/rectification process, called during sl::Camera::open, is using the raw parameters defined in the SNXXX.conf file, where XXX is the ZED Serial Number.
     \n Those values may be adjusted or not by the Self-Calibration to get a proper image alignment. After sl::Camera::open is done (with or without Self-Calibration activated) success, most of the stereo parameters (except Baseline of course) should be 0 or very close to 0.
     \n It means that images after rectification process (given by retrieveImage()) are aligned as if they were taken by a "perfect" stereo camera, defined by the new CalibrationParameters.
     \warning CalibrationParameters are returned in COORDINATE_SYSTEM::IMAGE, they are not impacted by the InitParameters::coordinate_system
      */
-    struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ CalibrationParameters {
+    struct /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ CalibrationParameters {
         CameraParameters left_cam; /**< Intrinsic parameters of the left camera  */
         CameraParameters right_cam; /**< Intrinsic parameters of the right camera  */
-        Transform stereo_transform; /**< Left to Right camera transform, expressed in user coordinate system and unit (defines by InitParameters). */
+        Transform stereo_transform; /**< Left to Right camera transform, expressed in user coordinate system and unit (defined by InitParameters). */
 
         float getCameraBaseline();
 
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use stereo_transform.getRotationMatrix instead")/*@endcond*/ float3 R; /**< \deprecated see stereo_transform, Rotation on its own (using Rodrigues' transformation) of the right sensor. The left is considered as the reference. Defined as 'tilt', 'convergence' and 'roll'. Using a \ref Rotation, you can use \ref Rotation::setRotationVector(R) to convert into other representations.*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use stereo_transform.getTranslation instead")/*@endcond*/ float3 T; /**< \deprecated see stereo_transform,  Translation between the two sensors. T.x is the distance between the two cameras (baseline) in the sl::UNIT chosen during sl::Camera::open (mm, cm, meters, inches...).*/
+        /*@cond SHOWHIDDEN*/
+        SL_DEPRECATED("Use stereo_transform.getRotationMatrix instead")
+        float3 R; /**< \deprecated see stereo_transform, Rotation on its own (using Rodrigues' transformation) of the right sensor. The left is considered as the reference. Defined as 'tilt', 'convergence' and 'roll'. Using a \ref Rotation, you can use \ref Rotation::setRotationVector(R) to convert into other representations.*/
+        SL_DEPRECATED("Use stereo_transform.getTranslation instead")
+        float3 T; /**< \deprecated see stereo_transform,  Translation between the two sensors. T.x is the distance between the two cameras (baseline) in the sl::UNIT chosen during sl::Camera::open (mm, cm, meters, inches...).*/
+        /*@endcond*/
     };
 
     /**
@@ -3121,9 +3141,9 @@ namespace sl {
     \ingroup Sensors_group
     \brief Structure containing information about a single sensor available in the current device
 
-    Those information about the camera sensors are available int the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
+    That information about the camera sensors is available in the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
 
-    \note This object is meant to be used as a read-only container, editing any of its field won't impact the SDK.
+    \note This object is meant to be used as a read-only container, editing any of its fields won't impact the SDK.
      */
     struct SensorParameters {
         sl::SENSOR_TYPE type; /**< The type of the sensor as \ref DEVICE_SENSORS*/
@@ -3141,13 +3161,14 @@ namespace sl {
     \ingroup Sensors_group
     \brief Structure containing information about all the sensors available in the current device
 
-    Those information about the camera sensors are available int the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
+    That information about the camera sensors is available in the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
 
-    \note This object is meant to be used as a read-only container, editing any of its field won't impact the SDK.
+    \note This object is meant to be used as a read-only container, editing any of its fields won't impact the SDK.
      */
-    struct SensorsConfiguration {
+    struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ SensorsConfiguration {
         unsigned int firmware_version = 0; /**< The firmware version of the sensor module, 0 if no sensors are available (ZED camera model). */
         sl::Transform camera_imu_transform; /**< IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame. */
+        sl::Transform imu_magnetometer_transform; /**< Magnetometer to IMU transform matrix, that contains rotation and translation between IMU frame and magnetometer frame. */
         sl::SensorParameters accelerometer_parameters; /**< Configuration of the accelerometer device */
         sl::SensorParameters gyroscope_parameters; /**< Configuration of the gyroscope device */
         sl::SensorParameters magnetometer_parameters; /**< Configuration of the magnetometer device */
@@ -3161,7 +3182,7 @@ namespace sl {
     \ingroup Core_group
     \brief Structure containing information about the camera sensor
 
-    Those information about the camera are available int the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
+    That information about the camera is available in the \ref CameraInformation struct returned by \ref Camera::getCameraInformation().
 
     \note This object is meant to be used as a read-only container, editing any of its field won't impact the SDK.
     \warning CalibrationParameters are returned in COORDINATE_SYSTEM::IMAGE, they are not impacted by the InitParameters::coordinate_system
@@ -3179,7 +3200,7 @@ namespace sl {
     \ingroup Core_group
     \brief Structure containing information of a single camera (serial number, model, input type, etc.)
 
-    Those information about the camera will be returned by \ref Camera::getCameraInformation().
+    That information about the camera will be returned by \ref Camera::getCameraInformation().
 
     \note This object is meant to be used as a read-only container, editing any of its field won't impact the SDK.
      */
@@ -3190,13 +3211,22 @@ namespace sl {
         CameraConfiguration camera_configuration; /**< Camera configuration as defined in \ref CameraConfiguration. */
         SensorsConfiguration sensors_configuration; /**< Device Sensors configuration as defined in \ref SensorsConfiguration. */
 
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.calibration_parameters instead")/*@endcond*/ CalibrationParameters calibration_parameters; /**< \deprecated see CameraConfiguration::calibration_parameters, Intrinsic and Extrinsic stereo parameters for rectified/undistorded images (default).*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.calibration_parameters_raw instead")/*@endcond*/ CalibrationParameters calibration_parameters_raw; /**< \deprecated see CameraConfiguration::calibration_parameters_raw, Intrinsic and Extrinsic stereo parameters for original images (unrectified/distorded).*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use sensors_configuration.camera_imu_transform instead")/*@endcond*/ sl::Transform camera_imu_transform; /**< \deprecated see SensorsConfiguration::camera_imu_transform, IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame.*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.firmware_version instead")/*@endcond*/ unsigned int camera_firmware_version = 0; /**< \deprecated CameraConfiguration::firmware_version, Firmware version of the camera.*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use sensors_configuration.firmware_version instead")/*@endcond*/ unsigned int sensors_firmware_version = 0; /**< \deprecated see SensorsConfiguration::firmware_version, Firmware version of the sensors of ZED-M or ZED2.*/
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.fps instead")/*@endcond*/ float camera_fps = 0; /**< \deprecated see CameraConfiguration::fps, camera frame rate. */
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("Use camera_configuration.resolution instead")/*@endcond*/ Resolution camera_resolution; /**< \deprecated see CameraConfiguration::resolution, camera resolution. */
+        /*@cond SHOWHIDDEN*/
+        SL_DEPRECATED("Use camera_configuration.calibration_parameters instead")
+        CalibrationParameters calibration_parameters; /**< \deprecated see CameraConfiguration::calibration_parameters, Intrinsic and Extrinsic stereo parameters for rectified/undistorded images (default).*/
+        SL_DEPRECATED("Use camera_configuration.calibration_parameters_raw instead")
+        CalibrationParameters calibration_parameters_raw; /**< \deprecated see CameraConfiguration::calibration_parameters_raw, Intrinsic and Extrinsic stereo parameters for original images (unrectified/distorded).*/
+        SL_DEPRECATED("Use sensors_configuration.camera_imu_transform instead")
+        sl::Transform camera_imu_transform; /**< \deprecated see SensorsConfiguration::camera_imu_transform, IMU to Left camera transform matrix, that contains rotation and translation between IMU frame and camera frame.*/
+        SL_DEPRECATED("Use camera_configuration.firmware_version instead")
+        unsigned int camera_firmware_version = 0; /**< \deprecated CameraConfiguration::firmware_version, Firmware version of the camera.*/
+        SL_DEPRECATED("Use sensors_configuration.firmware_version instead")
+        unsigned int sensors_firmware_version = 0; /**< \deprecated see SensorsConfiguration::firmware_version, Firmware version of the sensors of ZED-M or ZED2.*/
+        SL_DEPRECATED("Use camera_configuration.fps instead")
+        float camera_fps = 0; /**< \deprecated see CameraConfiguration::fps, camera frame rate. */
+        SL_DEPRECATED("Use camera_configuration.resolution instead")
+        Resolution camera_resolution; /**< \deprecated see CameraConfiguration::resolution, camera resolution. */
+        /*@endcond*/
     }; ///@}
 
     /**
@@ -3206,7 +3236,7 @@ namespace sl {
 
     Different representations of position and orientation can be retrieved, along with timestamp and pose confidence.
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Pose {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Pose {
         friend class CameraMemberHandler;
         friend class Camera;
         //ZED_SDK_VERSION_ATTRIBUTE
@@ -3249,16 +3279,15 @@ namespace sl {
          */
         Rotation getRotationMatrix();
 
+        /*@cond SHOWHIDDEN*/
         /**
         \brief Returns the rotation (3x3) from the pose.
         \return The (3x3) rotation matrix.
         \deprecated See \ref getRotationMatrix
          */
-
-        /*@cond SHOWHIDDEN*/ SL_DEPRECATED("use getRotationMatrix instead") /*@endcond*/
-        inline Rotation getRotation() {
-            return getRotationMatrix();
-        }
+        SL_DEPRECATED("use getRotationMatrix instead")
+        Rotation getRotation();
+        /*@endcond*/
 
         /**
         \brief Returns the rotation (3x1 rotation vector obtained from 3x3 rotation matrix using Rodrigues formula) from the pose.
@@ -3274,39 +3303,39 @@ namespace sl {
         float3 getEulerAngles(bool radian = true);
 
         /**
-        4x4 Matrix which contains the rotation (3x3) and the translation. Orientation is extracted from this transform as well.
+        \brief 4x4 Matrix which contains the rotation (3x3) and the translation. Orientation is extracted from this transform as well.
          */
         Transform pose_data;
 
         /**
-        Timestamp of the pose. This timestamp should be compared with the camera timestamp for synchronization.
+        \brief Timestamp of the pose. This timestamp should be compared with the camera timestamp for synchronization.
          */
         sl::Timestamp timestamp;
 
         /**
-        Confidence/Quality of the pose estimation for the target frame.
+        \brief Confidence / Quality of the pose estimation for the target frame.
         \n A confidence metric of the tracking [0-100], 0 means that the tracking is lost, 100 means that the tracking can be fully trusted.
          */
         int pose_confidence;
 
         /**
         \brief 6x6 Pose covariance of translation (the first 3 values) and rotation in so3 (the last 3 values)
-        
-        \note Computed only if sl::PositionalTrackingParameters::enable_area_memory is disabled.
-         */
+        */
         float pose_covariance[36];
 
         /**
-        boolean that indicates if tracking is activated or not. You should check that first if something wrong.
+        \brief Boolean that indicates if tracking is activated or not. You should check that first if something wrong.
          */
         bool valid;
 
         /**
-        twist and twist covariance of the camera
-        available in reference camera
+        \brief Twist of the camera available in reference camera, this expresses velocity in free space, broken into its linear and angular parts.
          */
         float twist[6];
 
+        /**
+        \brief Row-major representation of the 6x6 twist covariance matrix of the camera, this expresses the uncertainty of the twist
+        */
         float twist_covariance[36];
     };
 
@@ -3314,8 +3343,10 @@ namespace sl {
     \class SensorsData
     \ingroup Sensors_group
     \brief Contains all sensors data (except image sensors) to be used for positional tracking or environment study.
+    \note Some data are not available in SVO and streaming input mode. They are specified by a note "Not available in SVO or Stream mode." in the documentation of a specific data.
+    If nothing is mentionned in the documentation, they are available in all input modes.
      */
-    struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ SensorsData {
+    struct /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ SensorsData {
 
         /**
         \enum CAMERA_MOTION_STATE
@@ -3326,7 +3357,9 @@ namespace sl {
             STATIC, /**< The camera is static. */
             MOVING, /**< The camera is moving. */
             FALLING, /**< The camera is falling. */
+            ///@cond SHOWHIDDEN
             LAST
+            ///@endcond
         };
 
         /**
@@ -3334,7 +3367,7 @@ namespace sl {
         \ingroup Sensors_group
         \brief Contains Barometer sensor data.
          */
-        struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ BarometerData {
+        struct /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ BarometerData {
             /**
             Defines if the sensor is available in your camera.
              */
@@ -3350,7 +3383,6 @@ namespace sl {
              */
             float pressure;
 
-
             /**
             Relative altitude from first camera position (at open() time)
              */
@@ -3365,9 +3397,9 @@ namespace sl {
         /**
         \class TemperatureData
         \ingroup Sensors_group
-        \brief Contains sensors temperatures data.
+        \brief Contains sensors temperature data.
          */
-        struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ TemperatureData {
+        struct /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ TemperatureData {
 
             /**
             \enum SENSOR_LOCATION
@@ -3379,10 +3411,12 @@ namespace sl {
                 BAROMETER, /**< The Barometer sensor location */
                 ONBOARD_LEFT, /**< The Temperature sensor left location */
                 ONBOARD_RIGHT, /**< The Temperature sensor right location */
+                ///@cond SHOWHIDDEN
                 LAST
+                ///@endcond
             };
 
-            ERROR_CODE get(SENSOR_LOCATION location, float& temperature);
+            ERROR_CODE get(SENSOR_LOCATION location, float &temperature);
 
             std::map<SENSOR_LOCATION, float> temperature_map;
         };
@@ -3393,6 +3427,18 @@ namespace sl {
         \brief Contains Magnetometer sensor data.
          */
         struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ MagnetometerData {
+
+            enum class HEADING_STATE {
+                GOOD, /**< The heading is reliable and not affected by iron interferences. */
+                OK, /**< The heading is reliable, but affected by slight iron interferences. */
+                NOT_GOOD, /**< The heading is not reliable because affected by strong iron interferences. */
+                NOT_CALIBRATED, /**< The magnetometer has not been calibrated. */
+                MAG_NOT_AVAILABLE, /**< The magnetomer sensor is not available. */
+                ///@cond SHOWHIDDEN
+                LAST
+                ///@endcond
+            };
+
             /**
             Defines if the sensor is available in your camera.
              */
@@ -3407,14 +3453,39 @@ namespace sl {
             /**
             (3x1) Vector for magnetometer raw values (uncalibrated)
             In other words, the current magnetic field (uT), along with the x, y, and z axes.
+            \note The magnetometer raw values are affected by soft and hard iron interferences. The sensor must be
+            calibrated, placing the camera in the working environment, using the ZED Sensor Viewer tool.
+            \note Not available in SVO or Stream mode.
              */
             sl::float3 magnetic_field_uncalibrated;
 
             /**
-            (3x1) Vector for magnetometer values (using factory calibration)
-            In other words, the current magnetic field (uT), along with the x, y, and z axes.
+            (3x1) Vector for magnetometer values (after user calibration)
+            In other words, the current calibrated and normalized magnetic field (uT), along with the x, y, and z axes.
+            \note To calibrate the magnetometer sensor please use the ZED Sensor Viewer tool after placing the camera
+            in the final operating environment
              */
             sl::float3 magnetic_field_calibrated;
+
+            /**
+             * The camera heading in degrees relative to the magnetic North Pole.
+             * \note The magnetic North Pole has an offset with respect to the geographic North Pole, depending on the
+             * geographic position of the camera.
+             * \note To get a correct magnetic heading the magnetometer sensor must be calibrated using the
+             * ZED Sensor Viewer tool
+             */
+            float magnetic_heading;
+
+            /**
+             * The state of the /ref magnetic_heading value
+             */
+            HEADING_STATE magnetic_heading_state;
+
+            /**
+             * The accuracy of the magnetic heading measure in the range [0.0,1.0].
+             * \note A negative value means that the magnetometer must be calibrated using the ZED Sensor Viewer tool
+             */
+            float magnetic_heading_accuracy;
 
             /**
              Realtime data acquisition rate [Hz]
@@ -3427,7 +3498,7 @@ namespace sl {
         \ingroup Sensors_group
         \brief Contains IMU sensor data.
          */
-        struct /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ IMUData {
+        struct /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ IMUData {
             /**
             Defines if the sensor is available in your camera.
              */
@@ -3453,6 +3524,7 @@ namespace sl {
             (3x1) Vector for angular velocity of the gyroscope, given in deg/s. Values are corrected from bias, scale and misalignment
             In other words, the current velocity at which the sensor is rotating around the x, y, and z axes.
             \note Those values can be directly ingested in a IMU fusion algorithm to extract quaternion
+            \note Not available in SVO or Stream mode.
              */
             sl::float3 angular_velocity;
 
@@ -3463,11 +3535,11 @@ namespace sl {
              */
             sl::float3 linear_acceleration;
 
-
             /**
             (3x1) Vector for angular velocity of the gyroscope, given in deg/s, uncorrected from imu calibration.
             In other words, the current velocity at which the sensor is rotating around the x, y, and z axes.
             \note those values are the exact raw values from the IMU
+            \note Not available in SVO or Stream mode.
              */
             sl::float3 angular_velocity_uncalibrated;
 
@@ -3475,17 +3547,20 @@ namespace sl {
             (3x1) Vector for linear acceleration of the accelerometer, given in m/s^2, uncorrected from imu calibration.
             In other words, the current acceleration of the sensor, along with the x, y, and z axes.
             \note those values are the exact raw values from the IMU
+            \note Not available in SVO or Stream mode.
              */
             sl::float3 linear_acceleration_uncalibrated;
 
-
             /**
-            (3x3) 3x3 Covariance matrix for the angular velocity of the gyroscope
+            (3x3) 3x3 Covariance matrix for the angular velocity of the gyroscope, given in deg/s
+             Can be converted in rad/s using pi/180 factor
+            \note Not available in SVO or Stream mode.
              */
             sl::Matrix3f angular_velocity_covariance;
 
             /**
             (3x3) 3x3 Covariance matrix for the linear acceleration of the accelerometer
+            \note Not available in SVO or Stream mode.
              */
             sl::Matrix3f linear_acceleration_covariance;
 
@@ -3531,7 +3606,6 @@ namespace sl {
          */
         CAMERA_MOTION_STATE camera_moving_state;
 
-
         ////////////////// Sync //////////////////////
 
         /**
@@ -3543,20 +3617,24 @@ namespace sl {
     };
 
     ///@cond SHOWHIDDEN
+    String SL_CORE_EXPORT toString(const sl::SensorsData::MagnetometerData::HEADING_STATE &mag_heading_state);
+
+    inline std::ostream &operator<<(std::ostream &os, const sl::SensorsData::MagnetometerData::HEADING_STATE &mag_heading_state) {
+        return os << toString(mag_heading_state);
+    }
+
     String SL_CORE_EXPORT toString(const sl::SensorsData::CAMERA_MOTION_STATE &camera_moving_state);
 
     inline std::ostream &operator<<(std::ostream &os, const sl::SensorsData::CAMERA_MOTION_STATE &camera_moving_state) {
         return os << toString(camera_moving_state);
     }
 
-    String SL_CORE_EXPORT toString(const sl::SensorsData::TemperatureData::SENSOR_LOCATION& sensor_loc);
+    String SL_CORE_EXPORT toString(const sl::SensorsData::TemperatureData::SENSOR_LOCATION &sensor_loc);
 
-    inline std::ostream& operator<<(std::ostream& os, const sl::SensorsData::TemperatureData::SENSOR_LOCATION& sensor_loc) {
+    inline std::ostream &operator<<(std::ostream &os, const sl::SensorsData::TemperatureData::SENSOR_LOCATION &sensor_loc) {
         return os << toString(sensor_loc);
     }
     ///@endcond
-
-
 
     /*!
     \brief Compute the rotation matrix from the gravity vector : the rotation can used to find the world rotation from the gravity of an IMU
@@ -3564,7 +3642,7 @@ namespace sl {
     \param gravity_vector : the gravity vector, acceleration set by an IMU
     \return Rotation : rotation matrix, useful for Camera::detectFloorPlane as a gravity prior
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Rotation computeRotationMatrixFromGravity(sl::float3 axis_to_align, sl::float3 gravity_vector);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Rotation computeRotationMatrixFromGravity(sl::float3 axis_to_align, sl::float3 gravity_vector);
 
     /*!
     \brief Get the coordinate transform conversion matrix to change coordinate system.
@@ -3572,7 +3650,7 @@ namespace sl {
     \param coord_system_dst : the destination coordinate system.
     \return Matrix3f : transformation matrix, to apply to a \ref float3 point simply multiply by this matrix (pt_coord_dst = tf_matrix * pt_coord_src).
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Matrix3f getCoordinateTransformConversion3f(COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Matrix3f getCoordinateTransformConversion3f(COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
 
     /*!
     \brief Get the coordinate transform conversion matrix to change coordinate system.
@@ -3580,7 +3658,7 @@ namespace sl {
     \param coord_system_dst : the destination coordinate system.
     \return Matrix4f : transformation matrix, to apply to a \ref float4 point simply multiply by this matrix (pt_coord_dst = tf_matrix * pt_coord_src).
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Matrix4f getCoordinateTransformConversion4f(COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Matrix4f getCoordinateTransformConversion4f(COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
 
     /*!
     \brief Change the coordinate system of a matrix.
@@ -3590,7 +3668,7 @@ namespace sl {
     \param mem : define which memory should be transformed from floatMat.
     \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ERROR_CODE convertCoordinateSystem(Mat &floatMat, COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst, MEM mem = MEM::CPU);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ERROR_CODE convertCoordinateSystem(Mat &floatMat, COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst, MEM mem = MEM::CPU);
 
     /*!
     \brief Change the coordinate system of a transform matrix.
@@ -3599,7 +3677,7 @@ namespace sl {
     \param coord_system_dst : the destination coordinate system for motionMat.
     \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ERROR_CODE convertCoordinateSystem(Transform &motionMat, COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ERROR_CODE convertCoordinateSystem(Transform &motionMat, COORDINATE_SYSTEM coord_system_src, COORDINATE_SYSTEM coord_system_dst);
 
     /*!
     \brief Get the unit factor to change units.
@@ -3607,7 +3685,7 @@ namespace sl {
     \param unit_dst : the destination coordinate system.
     \return float : unit scale (pt_coord_dst = factor * pt_coord_src).
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ float getUnitScale(UNIT unit_src, UNIT unit_dst);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ float getUnitScale(UNIT unit_src, UNIT unit_dst);
 
     /*!
     \brief Change the unit of a matrix.
@@ -3617,7 +3695,7 @@ namespace sl {
     \param mem : define which memory should be transformed from floatMat.
     \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ERROR_CODE convertUnit(Mat &floatMat, UNIT unit_src, UNIT unit_dst, MEM mem = MEM::CPU);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ERROR_CODE convertUnit(Mat &floatMat, UNIT unit_src, UNIT unit_dst, MEM mem = MEM::CPU);
 
     /*!
     \brief Change the unit (of the translations) of a transform matrix.
@@ -3626,7 +3704,7 @@ namespace sl {
     \param unit_dst : the destination unit for motionMat.
     \return \ref SUCCESS if everything went well, \ref ERROR_CODE::FAILURE otherwise.
      */
-    /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ERROR_CODE convertUnit(Transform &motionMat, UNIT unit_src, UNIT unit_dst);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ERROR_CODE convertUnit(Transform &motionMat, UNIT unit_src, UNIT unit_dst);
 
     /**
     \enum OBJECT_CLASS
@@ -3635,8 +3713,15 @@ namespace sl {
      */
     enum class OBJECT_CLASS {
         PERSON = 0, /**< For people detection */
-        VEHICLE = 1, /**< For vehicles detection. It can be cars, trucks, buses, motorcycles etc */
-        LAST
+        VEHICLE = 1, /**< For vehicle detection. It can be cars, trucks, buses, motorcycles etc */
+        BAG = 2, /**< For bag detection (backpack, handbag, suitcase) */
+        ANIMAL = 3, /**< For animal detection (cow, sheep, horse, dog, cat, bird, etc) */
+        ELECTRONICS = 4, /**< For electronic device detection (cellphone, laptop, etc) */
+        FRUIT_VEGETABLE = 5, /**<  For fruit and vegetable detection (banana, apple, orange, carrot, etc) */
+        SPORT = 6, /**<  For sport-related object detection (sportball) */
+        ///@cond SHOWHIDDEN
+        LAST = 7
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -3648,6 +3733,52 @@ namespace sl {
     ///@endcond
 
     /**
+   \enum OBJECT_SUBCLASS
+   \ingroup Object_group
+   \brief Available object subclass, given as hint, when using object tracking an object can change of OBJECT_SUBCLASS while keeping the same OBJECT_CLASS and id (i.e: frame M: MOTORBIKE, frame N:BICYCLE)
+     */
+    enum class OBJECT_SUBCLASS {
+        PERSON = 0, /**< PERSON / PERSON_BODY */
+        PERSON_HEAD = 22, /**< PERSON */
+        BICYCLE = 1, /**< VEHICLE */
+        CAR = 2, /**< VEHICLE */
+        MOTORBIKE = 3, /**< VEHICLE */
+        BUS = 4, /**< VEHICLE */
+        TRUCK = 5, /**< VEHICLE */
+        BOAT = 6, /**< VEHICLE */
+        BACKPACK = 7, /**< BAG */
+        HANDBAG = 8, /**< BAG */
+        SUITCASE = 9, /**< BAG */
+        BIRD = 10, /**< ANIMAL */
+        CAT = 11, /**< ANIMAL */
+        DOG = 12, /**< ANIMAL */
+        HORSE = 13, /**< ANIMAL */
+        SHEEP = 14, /**< ANIMAL */
+        COW = 15, /**< ANIMAL */
+        CELLPHONE = 16, /**< ELECTRONICS */
+        LAPTOP = 17, /**< ELECTRONICS */
+        BANANA = 18, /**< FRUIT/VEGETABLE */
+        APPLE = 19, /**< FRUIT/VEGETABLE */
+        ORANGE = 20, /**< FRUIT/VEGETABLE */
+        CARROT = 21, /**< FRUIT/VEGETABLE */
+        SPORTSBALL = 23, /**< SPORT */
+        ///@cond SHOWHIDDEN
+        LAST = 24
+        ///@endcond
+    };
+
+    ///@cond SHOWHIDDEN
+    String SL_CORE_EXPORT toString(const OBJECT_SUBCLASS &object_subclass);
+
+    inline std::ostream &operator<<(std::ostream &os, const OBJECT_SUBCLASS &object_subclass) {
+        return os << toString(object_subclass);
+    }
+    ///@endcond
+
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ OBJECT_CLASS getObjectClass(OBJECT_SUBCLASS object_type);
+    /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ std::vector<OBJECT_SUBCLASS> getObjectSubClasses(OBJECT_CLASS object_type);
+
+    /**
     \enum OBJECT_TRACKING_STATE
     \ingroup Object_group
     \brief Lists available object tracking state
@@ -3657,7 +3788,9 @@ namespace sl {
         OK, /**< The object is tracked */
         SEARCHING, /**< The object couldn't be detected in the image and is potentially occluded, the trajectory is estimated */
         TERMINATE, /**< This is the last searching state of the track, the track will be deleted in the next retreiveObject */
+        ///@cond SHOWHIDDEN
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -3676,7 +3809,9 @@ namespace sl {
     enum class OBJECT_ACTION_STATE {
         IDLE = 0, /**< The object is staying static. */
         MOVING = 1, /**< The object is moving. */
+        ///@cond SHOWHIDDEN
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -3688,25 +3823,94 @@ namespace sl {
     ///@endcond
 
     /**
+    \enum BODY_FORMAT
+    \ingroup Object_group
+    \brief Lists of supported skeleton body model
+     */
+    enum class BODY_FORMAT {
+        /**
+         * \brief 18  keypoint model of COCO 18. 
+         * \note local keypoint angle and position are not available with this format
+         */
+        POSE_18,
+
+        /**
+         * \brief 34 keypoint model. 
+         * \note local keypoint angle and position are available
+         * \warning The SDK will automatically enable fitting.
+         */
+        POSE_34,
+        ///@cond SHOWHIDDEN
+        LAST
+        ///@endcond
+    };
+    
+    ///@cond SHOWHIDDEN
+    String SL_CORE_EXPORT toString(const BODY_FORMAT &body_format);
+
+    inline std::ostream &operator<<(std::ostream &os, const BODY_FORMAT &body_format) {
+        return os << toString(body_format);
+    }
+    ///@endcond
+    
+    /**
+    \enum REFERENCE_FRAME
+    \ingroup PositionalTracking_group
+    \brief Defines which type of position matrix is used to store camera path and pose.
+     */
+    enum class REFERENCE_FRAME {
+        WORLD, /**< The transform of sl::Pose will contains the motion with reference to the world frame (previously called PATH).*/
+        CAMERA, /**< The transform of sl::Pose will contains the motion with reference to the previous camera frame (previously called POSE).*/
+        ///@cond SHOWHIDDEN
+        LAST
+        ///@endcond
+    };
+
+    ///@cond SHOWHIDDEN
+    String SL_CORE_EXPORT toString(const REFERENCE_FRAME &ref_frame);
+
+    inline ::std::ostream &operator<<(::std::ostream &os, const REFERENCE_FRAME &ref_frame) {
+        return os << toString(ref_frame);
+    }
+    ///@endcond
+
+    /**
     \ingroup Object_group
     \brief Contains data of a detected object such as its \ref bounding_box, \ref label, \ref id and its 3D \ref position.
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ ObjectData {
-    public:
-    ObjectData();
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ObjectData {
+        friend class CameraMemberHandler;
 
-    ~ObjectData();
+    public:
+        ObjectData();
+
+        ~ObjectData();
 
         /**
         \brief Object identification number, used as a reference when tracking the object through the frames
-        \note Is set to -1 if the obeject is not currently tracked.
+        \note Only available if \ref ObjectDetectionParameters::enable_tracking is activated else set to -1.
          */
         int id;
 
         /**
-        \brief Object label. Identify the object type
+        \brief Unique ID to help identify and track AI detections. Can be either generated externally, or using \ref generate_unique_id() or left empty
+         */
+        String unique_object_id;
+
+        /**
+        \brief Object label, forwarded from \ref CustomBoxObjectData when using \ref DETECTION_MODEL::CUSTOM_BOX_OBJECTS
+         */
+        int raw_label = 0;
+
+        /**
+        \brief Object category. Identify the object type
          */
         OBJECT_CLASS label;
+
+        /**
+        \brief Object subclass
+         */
+        OBJECT_SUBCLASS sublabel;
 
         /**
         \brief Defines the object tracking state
@@ -3719,28 +3923,31 @@ namespace sl {
         OBJECT_ACTION_STATE action_state;
 
         /**
-        \brief Defines the object 3D centroid in the reference frame selected in \ref RuntimeParameters::measure3D_reference_frame and given to the \ref Camera::grab() function.
+        \brief Defines the object 3D centroid.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
          */
         sl::float3 position;
 
         /**
         \brief Defines the object 3D velocity
+         * Defined in \ref sl:InitParameters::UNIT / seconds, expressed in \ref RuntimeParameters::measure3D_reference_frame.
          */
         sl::float3 velocity;
 
-
         /**
         \brief the covariance matrix of the 3d position, represented by its upper triangular matrix value
-        * \code
+         * \code
              = [p0, p1, p2]
                [p1, p3, p4]
                [p2, p4, p5]
           \endcode
           where pi is position_covariance[i]
-        */
+         */
         float position_covariance[6];
+
         /**
          * \brief 2D bounding box of the person represented as four 2D points starting at the top left corner and rotation clockwise.
+         * Expressed in pixels on the original image resolution, [0,0] is the top left corner.
          * \code
              A ------ B
              | Object |
@@ -3750,19 +3957,21 @@ namespace sl {
         std::vector<sl::uint2> bounding_box_2d;
 
         /**
-        \brief Defines for the bounding_box_2d the pixels which really belong to the object (set to 255) and those of the background (set to 0).
-         \warning : The mask information is available only for tracked objects that have a valid depth.
+         \brief Defines for the bounding_box_2d the pixels which really belong to the object (set to 255) and those of the background (set to 0).
+         \warning : The mask information is only available for tracked objects ( \ref OBJECT_TRACKING_STATE::OK) that have a valid depth. Otherwise, Mat will not be initialized (mask.isInit() == false)
          */
         sl::Mat mask;
 
         /**
         \brief Defines the detection confidence value of the object. 
-         * A lower confidence value means the object might not be localized perfectly or the label (OBJECT_CLASS) is uncertain
+         * From 0 to 100, a low value means the object might not be localized perfectly or the label (OBJECT_CLASS) is uncertain.
          */
         float confidence;
 
         /**
          * \brief 3D bounding box of the person represented as eight 3D points
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
+         * 
          * \code
                1 ------ 2
               /        /|
@@ -3771,19 +3980,19 @@ namespace sl {
              |        |/
              4 ------ 7
          \endcode
-         \note Only available if ObjectDetectionParameters::enable_tracking is activated
          */
         std::vector<sl::float3> bounding_box;
 
         /**
          * \brief 3D object dimensions: width, height, length
-        \note Only available if ObjectDetectionParameters::enable_tracking is activated
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
          */
         sl::float3 dimensions;
 
         /**
          * \brief A set of useful points representing the human body, expressed in 2D, respect to the original image resolution.
-         We use a classic 18 points representation, the points semantic and order is given by BODY_PARTS.
+         * We use a classic 18 points representation, the points semantic and order is given by BODY_PARTS.
+         * Expressed in pixels on the original image resolution, [0,0] is the top left corner.
           \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
           \warning in some cases, eg. body partially out of the image, some keypoint can not be detected, they will have negatives coordinates.
          */
@@ -3791,7 +4000,8 @@ namespace sl {
 
         /**
          * \brief A set of useful points representing the human body, expressed in 3D.
-         We use a classic 18 points representation, the points semantic and order is given by BODY_PARTS.
+         * We use a classic 18 points representation, the points semantic and order is given by BODY_PARTS.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
           \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
           \warning in some cases, eg. body partially out of the image or missing depth data, some keypoint can not be detected, they will have non finite values.
          */
@@ -3799,21 +4009,108 @@ namespace sl {
 
         /**
          * \brief bounds the head with four 2D points.
+         * Expressed in pixels on the original image resolution.
           \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
          */
         std::vector<sl::uint2> head_bounding_box_2d;
 
         /**
          * \brief bounds the head with eight 3D points.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
           \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
          */
         std::vector<sl::float3> head_bounding_box;
 
         /**
          * \brief 3D head centroid.
-          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
+          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX*.
          */
         sl::float3 head_position;
+
+        /**
+         * \brief Per keypoint detection confidence, can not be lower than the \ref ObjectDetectionRuntimeParameters::detection_confidence_threshold.
+          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX*.
+          \warning in some cases, eg. body partially out of the image or missing depth data, some keypoint can not be detected, they will have non finite values.
+         */
+        std::vector<float> keypoint_confidence;
+
+        /**
+            \brief Per keypoint local position (the position of the child keypoint with respect to its parent expressed in its parent coordinate frame)
+            \note it is expressed in REFERENCE_FRAME::CAMERA or REFERENCE_FRAME::WORLD
+            \warning Not available with DETECTION_MODEL::MULTI_CLASS_BOX* and with sl::BODY_FORMAT::POSE_18.
+         */
+        std::vector<sl::float3> local_position_per_joint;
+
+        /**
+            \brief Per keypoint local orientation
+            \note the orientation is represented by a quaternion which is stored in sl::float4 (sl::float4 q = sl::float4(qx,qy,qz,qw);)
+            \warning Not available with DETECTION_MODEL::MULTI_CLASS_BOX* and with sl::BODY_FORMAT::POSE_18.
+         */
+        std::vector<sl::float4> local_orientation_per_joint;
+
+        /**
+            \brief global root orientation of the skeleton. The orientation is also represented by a quaternion with the same format as \ref local_orientation_per_joint
+            \note the global root position is already accessible in \ref keypoint attribute by using the root index of a given sl::BODY_FORMAT
+            \warning Not available with DETECTION_MODEL::MULTI_CLASS_BOX* and with sl::BODY_FORMAT::POSE_18.
+            
+         */
+        sl::float4 global_root_orientation;
+
+    };
+
+    /**
+    \ingroup Object_group
+    \brief Generate a UUID like unique ID to help identify and track AI detections
+     */
+    String /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ generate_unique_id();
+
+    /**
+    \ingroup Object_group
+    \brief Container to store the externally detected objects. The objects can be ingested 
+     * using \ref Camera::ingestcustomBoxObjects() functions to extract 3D information and tracking over time
+     */
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ CustomBoxObjectData {
+    public:
+
+        CustomBoxObjectData();
+
+        /**
+        \brief Unique ID to help identify and track AI detections. Can be either generated externally, or using \ref generate_unique_id() or left empty
+         */
+        String unique_object_id;
+
+        /**
+         * \brief 2D bounding box represented as four 2D points starting at the top left corner and rotation clockwise.
+         * Expressed in pixels on the original image resolution, [0,0] is the top left corner.
+         * \code
+            A ------ B
+            | Object |
+            D ------ C
+        \endcode
+         */
+        std::vector<sl::uint2> bounding_box_2d;
+
+        /**
+        \brief Object label, this information is passed-through and can be used to improve object tracking
+         */
+        int label;
+
+        /**
+        \brief Detection confidence. Should be [0-1]. It can be used to improve the object tracking
+         */
+        float probability;
+
+        /**
+        \brief Provide hypothesis about the object movements (degrees of freedom) to improve the object tracking
+         * - true: means 2 DoF projected alongside the floor plane, the default for object standing on the ground such as person, vehicle, etc. 
+         * The projection implies that the objects can't be superposed on multiple horizontal levels
+         * 
+         * - false: 6 DoF full 3D movements are allowed
+         * 
+         * \note This parameter can't be changed for a given object tracking ID, it's advises to set it by labels to avoid issues.
+         */
+        bool is_grounded = true;
     };
 
     /**
@@ -3821,7 +4118,7 @@ namespace sl {
     \brief Contains the result of the object detection module.
     The detected objects are listed in \ref object_list.
      */
-    class /*@cond SHOWHIDDEN*/SL_CORE_EXPORT/*@endcond*/ Objects {
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ Objects {
     public:
         /**
         \brief Defines the timestamp corresponding to the frame acquisition. 
@@ -3852,17 +4149,18 @@ namespace sl {
          \return True if found False otherwise
          */
         bool getObjectDataFromId(sl::ObjectData &objectData, int objectDataId);
+
     };
 
     /**
     \ingroup Object_group
-     * \brief semantic and order of human body keypoints.
+     * \brief semantic of human body parts and order of \ref ObjectData::keypoint for BODY_FORMAT::POSE_18.
      */
     enum class BODY_PARTS {
         NOSE = 0,
         NECK = 1,
         RIGHT_SHOULDER = 2,
-        RIGHT_ELBOW= 3,
+        RIGHT_ELBOW = 3,
         RIGHT_WRIST = 4,
         LEFT_SHOULDER = 5,
         LEFT_ELBOW = 6,
@@ -3877,7 +4175,57 @@ namespace sl {
         LEFT_EYE = 15,
         RIGHT_EAR = 16,
         LEFT_EAR = 17,
+        ///@cond SHOWHIDDEN
         LAST = 18
+        ///@endcond
+    };
+
+    // for compatibility of previous SDK version
+    typedef BODY_PARTS BODY_PARTS_POSE_18;
+
+    /**
+    \ingroup Object_group
+     * \brief semantic of human body parts and order of \ref ObjectData::keypoint for BODY_FORMAT::POSE_34.
+     */
+    enum class BODY_PARTS_POSE_34
+    {
+        PELVIS = 0,
+        NAVAL_SPINE = 1,
+        CHEST_SPINE = 2,
+        NECK = 3,
+        LEFT_CLAVICLE = 4,
+        LEFT_SHOULDER = 5,
+        LEFT_ELBOW = 6,
+        LEFT_WRIST = 7,
+        LEFT_HAND = 8,
+        LEFT_HANDTIP = 9,
+        LEFT_THUMB = 10,
+        RIGHT_CLAVICLE = 11,
+        RIGHT_SHOULDER = 12,
+        RIGHT_ELBOW = 13,
+        RIGHT_WRIST = 14,
+        RIGHT_HAND = 15,
+        RIGHT_HANDTIP = 16,
+        RIGHT_THUMB = 17,
+        LEFT_HIP = 18,
+        LEFT_KNEE = 19,
+        LEFT_ANKLE = 20,
+        LEFT_FOOT = 21,
+        RIGHT_HIP = 22,
+        RIGHT_KNEE = 23,
+        RIGHT_ANKLE = 24,
+        RIGHT_FOOT = 25,
+        HEAD = 26,
+        NOSE = 27,
+        LEFT_EYE = 28,
+        LEFT_EAR = 29,
+        RIGHT_EYE = 30,
+        RIGHT_EAR = 31,
+        LEFT_HEEL = 32,
+        RIGHT_HEEL = 33,
+        ///@cond SHOWHIDDEN
+        LAST = 34
+        ///@endcond
     };
 
     /**
@@ -3885,33 +4233,239 @@ namespace sl {
      * \brief return associated index of each BODY_PART
      */
     inline int getIdx(BODY_PARTS part) {
+        return static_cast<int> (part);
+    }
+
+    /**
+    \ingroup Object_group
+     * \brief return associated index of each BODY_PARTS_POSE_34
+     */
+    inline int getIdx(BODY_PARTS_POSE_34 part)
+    {
         return static_cast<int>(part);
     }
 
     /**
     \ingroup Object_group
-     * \brief Links of human body keypoints, usefull for display.
+     * \brief Links of human body keypoints for BODY_FORMAT::POSE_18, useful for display.
      */
-    const std::vector<std::pair< BODY_PARTS, BODY_PARTS>> BODY_BONES{
-        {BODY_PARTS::NOSE, BODY_PARTS::NECK},
-        {BODY_PARTS::NECK, BODY_PARTS::RIGHT_SHOULDER},
-        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_ELBOW},
-        {BODY_PARTS::RIGHT_ELBOW, BODY_PARTS::RIGHT_WRIST},
-        {BODY_PARTS::NECK, BODY_PARTS::LEFT_SHOULDER},
-        {BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_ELBOW},
-        {BODY_PARTS::LEFT_ELBOW, BODY_PARTS::LEFT_WRIST},
-        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_HIP},
-        {BODY_PARTS::RIGHT_HIP, BODY_PARTS::RIGHT_KNEE},
-        {BODY_PARTS::RIGHT_KNEE, BODY_PARTS::RIGHT_ANKLE},
-        {BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_HIP},
-        {BODY_PARTS::LEFT_HIP, BODY_PARTS::LEFT_KNEE},
-        {BODY_PARTS::LEFT_KNEE, BODY_PARTS::LEFT_ANKLE},
-        {BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::LEFT_SHOULDER},
-        {BODY_PARTS::RIGHT_HIP, BODY_PARTS::LEFT_HIP},
-        {BODY_PARTS::NOSE, BODY_PARTS::RIGHT_EYE},
-        {BODY_PARTS::RIGHT_EYE, BODY_PARTS::RIGHT_EAR},
-        {BODY_PARTS::NOSE, BODY_PARTS::LEFT_EYE},
-        {BODY_PARTS::LEFT_EYE, BODY_PARTS::LEFT_EAR}
+    const std::vector<std::pair<BODY_PARTS, BODY_PARTS>> BODY_BONES
+    {
+        {
+            BODY_PARTS::NOSE, BODY_PARTS::NECK
+        },
+        {
+            BODY_PARTS::NECK, BODY_PARTS::RIGHT_SHOULDER
+        },
+        {
+            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_ELBOW
+        },
+        {
+            BODY_PARTS::RIGHT_ELBOW, BODY_PARTS::RIGHT_WRIST
+        },
+        {
+            BODY_PARTS::NECK, BODY_PARTS::LEFT_SHOULDER
+        },
+        {
+            BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_ELBOW
+        },
+        {
+            BODY_PARTS::LEFT_ELBOW, BODY_PARTS::LEFT_WRIST
+        },
+        {
+            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::RIGHT_HIP
+        },
+        {
+            BODY_PARTS::RIGHT_HIP, BODY_PARTS::RIGHT_KNEE
+        },
+        {
+            BODY_PARTS::RIGHT_KNEE, BODY_PARTS::RIGHT_ANKLE
+        },
+        {
+            BODY_PARTS::LEFT_SHOULDER, BODY_PARTS::LEFT_HIP
+        },
+        {
+            BODY_PARTS::LEFT_HIP, BODY_PARTS::LEFT_KNEE
+        },
+        {
+            BODY_PARTS::LEFT_KNEE, BODY_PARTS::LEFT_ANKLE
+        },
+        {
+            BODY_PARTS::RIGHT_SHOULDER, BODY_PARTS::LEFT_SHOULDER
+        },
+        {
+            BODY_PARTS::RIGHT_HIP, BODY_PARTS::LEFT_HIP
+        },
+        {
+            BODY_PARTS::NOSE, BODY_PARTS::RIGHT_EYE
+        },
+        {
+            BODY_PARTS::RIGHT_EYE, BODY_PARTS::RIGHT_EAR
+        },
+        {
+            BODY_PARTS::NOSE, BODY_PARTS::LEFT_EYE
+        },
+        {
+            BODY_PARTS::LEFT_EYE, BODY_PARTS::LEFT_EAR
+        }
+    };
+
+    /**
+    \ingroup Object_group
+     * \brief Links of human body keypoints for BODY_FORMAT::POSE_34, useful for display.
+     */
+	const std::vector<std::pair<BODY_PARTS_POSE_34, BODY_PARTS_POSE_34>> BODY_BONES_POSE_34{
+		{BODY_PARTS_POSE_34::PELVIS, BODY_PARTS_POSE_34::NAVAL_SPINE},
+		{BODY_PARTS_POSE_34::NAVAL_SPINE, BODY_PARTS_POSE_34::CHEST_SPINE},
+		{BODY_PARTS_POSE_34::CHEST_SPINE, BODY_PARTS_POSE_34::LEFT_CLAVICLE},
+		{BODY_PARTS_POSE_34::LEFT_CLAVICLE, BODY_PARTS_POSE_34::LEFT_SHOULDER},
+		{BODY_PARTS_POSE_34::LEFT_SHOULDER, BODY_PARTS_POSE_34::LEFT_ELBOW},
+		{BODY_PARTS_POSE_34::LEFT_ELBOW, BODY_PARTS_POSE_34::LEFT_WRIST},
+		{BODY_PARTS_POSE_34::LEFT_WRIST, BODY_PARTS_POSE_34::LEFT_HAND},
+		{BODY_PARTS_POSE_34::LEFT_HAND, BODY_PARTS_POSE_34::LEFT_HANDTIP},
+		{BODY_PARTS_POSE_34::LEFT_WRIST, BODY_PARTS_POSE_34::LEFT_THUMB},
+		{BODY_PARTS_POSE_34::CHEST_SPINE, BODY_PARTS_POSE_34::RIGHT_CLAVICLE},
+		{BODY_PARTS_POSE_34::RIGHT_CLAVICLE, BODY_PARTS_POSE_34::RIGHT_SHOULDER},
+		{BODY_PARTS_POSE_34::RIGHT_SHOULDER, BODY_PARTS_POSE_34::RIGHT_ELBOW},
+		{BODY_PARTS_POSE_34::RIGHT_ELBOW, BODY_PARTS_POSE_34::RIGHT_WRIST},
+		{BODY_PARTS_POSE_34::RIGHT_WRIST, BODY_PARTS_POSE_34::RIGHT_HAND},
+		{BODY_PARTS_POSE_34::RIGHT_HAND, BODY_PARTS_POSE_34::RIGHT_HANDTIP},
+		{BODY_PARTS_POSE_34::RIGHT_WRIST, BODY_PARTS_POSE_34::RIGHT_THUMB},
+		{BODY_PARTS_POSE_34::PELVIS, BODY_PARTS_POSE_34::LEFT_HIP},
+		{BODY_PARTS_POSE_34::LEFT_HIP, BODY_PARTS_POSE_34::LEFT_KNEE},
+		{BODY_PARTS_POSE_34::LEFT_KNEE, BODY_PARTS_POSE_34::LEFT_ANKLE},
+		{BODY_PARTS_POSE_34::LEFT_ANKLE, BODY_PARTS_POSE_34::LEFT_FOOT},
+		{BODY_PARTS_POSE_34::PELVIS, BODY_PARTS_POSE_34::RIGHT_HIP},
+		{BODY_PARTS_POSE_34::RIGHT_HIP, BODY_PARTS_POSE_34::RIGHT_KNEE},
+		{BODY_PARTS_POSE_34::RIGHT_KNEE, BODY_PARTS_POSE_34::RIGHT_ANKLE},
+		{BODY_PARTS_POSE_34::RIGHT_ANKLE, BODY_PARTS_POSE_34::RIGHT_FOOT},
+		{BODY_PARTS_POSE_34::CHEST_SPINE, BODY_PARTS_POSE_34::NECK},
+		{BODY_PARTS_POSE_34::NECK, BODY_PARTS_POSE_34::HEAD},
+		{BODY_PARTS_POSE_34::HEAD, BODY_PARTS_POSE_34::NOSE},
+		{BODY_PARTS_POSE_34::NOSE, BODY_PARTS_POSE_34::LEFT_EYE},
+		{BODY_PARTS_POSE_34::LEFT_EYE, BODY_PARTS_POSE_34::LEFT_EAR},
+		{BODY_PARTS_POSE_34::NOSE, BODY_PARTS_POSE_34::RIGHT_EYE},
+		{BODY_PARTS_POSE_34::RIGHT_EYE, BODY_PARTS_POSE_34::RIGHT_EAR},
+		{BODY_PARTS_POSE_34::LEFT_ANKLE, BODY_PARTS_POSE_34::LEFT_HEEL},
+		{BODY_PARTS_POSE_34::RIGHT_ANKLE, BODY_PARTS_POSE_34::RIGHT_HEEL},
+		{BODY_PARTS_POSE_34::LEFT_HEEL, BODY_PARTS_POSE_34::LEFT_FOOT},
+		{BODY_PARTS_POSE_34::RIGHT_HEEL, BODY_PARTS_POSE_34::RIGHT_FOOT} };
+
+        
+
+    /**
+    \ingroup Object_group
+    \brief Contains batched datas of a detected object
+     */
+    class /*@cond SHOWHIDDEN*/ SL_CORE_EXPORT /*@endcond*/ ObjectsBatch {
+    public:
+        /**
+        \brief the trajectory id
+         */
+        int id;
+
+        /**
+        \brief Object category. Identify the object type
+         */
+        OBJECT_CLASS label;
+
+        /**
+        \brief Object subclass
+         */
+        OBJECT_SUBCLASS sublabel;
+
+        /**
+        \brief Defines the object tracking state
+         */
+        OBJECT_TRACKING_STATE tracking_state;
+
+        /**
+        \brief a sample of 3d position
+         */
+        std::vector<sl::float3> positions;
+
+        /**
+        \brief a sample of the associated position covariance
+         */
+        std::vector<std::array<float, 6 >> position_covariances;
+
+        /**
+        \brief a sample of 3d velocity
+         */
+        std::vector<sl::float3> velocities;
+
+        /**
+        \brief the associated position timestamp
+         */
+        std::vector<sl::Timestamp> timestamps;
+
+        /**
+        \brief a sample of 3d bounding boxes
+         */
+        std::vector<std::vector<sl::float3>> bounding_boxes;
+
+        /**
+         * \brief 2D bounding box of the person represented as four 2D points starting at the top left corner and rotation clockwise.
+         * Expressed in pixels on the original image resolution, [0,0] is the top left corner.
+         * \code
+             A ------ B
+             | Object |
+             D ------ C
+         \endcode
+         */
+        std::vector<std::vector<sl::uint2>> bounding_boxes_2d;
+
+        /**
+        \brief a sample of object detection confidence
+         */
+        std::vector<float> confidences;
+
+        /**
+        \brief a sample of the object action state
+         */
+        std::vector<OBJECT_ACTION_STATE> action_states;
+
+        /**
+        \brief a sample of 2d person keypoints.
+         \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+        \warning in some cases, eg. body partially out of the image or missing depth data, some keypoint can not be detected, they will have non finite values.
+         */
+        std::vector<std::vector<sl::float2>> keypoints_2d;
+
+        /**
+        \brief a sample of 3d person keypoints
+         \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+          \warning in some cases, eg. body partially out of the image or missing depth data, some keypoint can not be detected, they will have non finite values.
+         */
+        std::vector<std::vector<sl::float3>> keypoints;
+
+        /**
+         * \brief bounds the head with four 2D points.
+         * Expressed in pixels on the original image resolution.
+          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+         */
+        std::vector<std::vector<sl::uint2>> head_bounding_boxes_2d;
+
+        /**
+         * \brief bounds the head with eight 3D points.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
+          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+         */
+        std::vector<std::vector<sl::float3>> head_bounding_boxes;
+
+        /**
+         * \brief 3D head centroid.
+         * Defined in \ref sl:InitParameters::UNIT, expressed in \ref RuntimeParameters::measure3D_reference_frame.
+          \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+         */
+        std::vector<sl::float3> head_positions;
+
+        /**
+         * \brief Per keypoint detection confidence, can not be lower than the \ref ObjectDetectionRuntimeParameters::detection_confidence_threshold.
+         \note Not available with DETECTION_MODEL::MULTI_CLASS_BOX.
+         \warning in some cases, eg. body partially out of the image or missing depth data, some keypoint can not be detected, they will have non finite values.
+         */
+        std::vector<std::vector<float>> keypoint_confidences;
     };
 }
 #endif /* __CORE_HPP__ */
@@ -4006,7 +4560,9 @@ namespace sl {
         PLY, /**< Contains only vertices and faces.*/
         PLY_BIN, /**< Contains only vertices and faces, encoded in binary.*/
         OBJ, /**< Contains vertices, normals, faces and textures informations if possible.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond        
     };
 
     ///@cond SHOWHIDDEN
@@ -4025,7 +4581,9 @@ namespace sl {
     enum class MESH_TEXTURE_FORMAT {
         RGB, /**< The texture has 3 channels.*/
         RGBA, /**< The texture has 4 channels.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4055,7 +4613,9 @@ namespace sl {
             LOW, /**< Clean the mesh by closing small holes and removing isolated faces.*/
             MEDIUM, /**< Soft decimation and smoothing.*/
             HIGH, /**< Decimate the number of triangles and apply a soft smooth.*/
+            ///@cond SHOWHIDDEN 
             LAST
+            ///@endcond
         };
 
         /**
@@ -4151,21 +4711,21 @@ namespace sl {
         std::vector<float3> vertices;
 
         /**
-        Triangles (or faces) contains the index of its three vertices. It corresponds to the 3 vertices of the triangle {v1, v2, v3}.
+        Vector of triangles, defined as a set of three vertices {v1, v2, v3}.
          */
         std::vector<uint3> triangles;
 
         /**
-        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertices.
+        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertex.
          */
         std::vector<float3> normals;
 
         /**
         UVs defines the 2D projection of each vertices onto the Texture.
         \n Values are normalized [0;1], starting from the bottom left corner of the texture (as requested by opengl).
-        \n In order to display a textured mesh you need to bind the Texture and then draw each triangles by picking its uv values.
+        \n In order to display a textured mesh you need to bind the Texture and then draw each triangle by picking its uv values.
 
-        \note Contains data only if your mesh have textures (by loading it or calling applytexture).
+        \note Contains data only if your mesh has textures (by loading it or calling \ref applyTexture).
          */
         std::vector<float2> uv;
 
@@ -4226,28 +4786,28 @@ namespace sl {
         std::vector<float3> vertices;
 
         /**
-        Triangles (or faces) contains the index of its three vertices. It corresponds to the 3 vertices of the triangle {v1, v2, v3}.
+        Vector of triangles, defined as a set of three vertices {v1, v2, v3}.
          */
         std::vector<uint3> triangles;
 
         /**
-        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertices.
+        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertex.
          */
         std::vector<float3> normals;
 
         /**
-        UVs defines the 2D projection of each vertices onto the Texture.
+        UVs define the 2D projection of each vertex onto the Texture.
         \n Values are normalized [0;1], starting from the bottom left corner of the texture (as requested by opengl).
-        \n In order to display a textured mesh you need to bind the Texture and then draw each triangles by picking its uv values.
+        \n In order to display a textured mesh you need to bind the Texture and then draw each triangle by picking its uv values.
 
-        \note Contains data only if your mesh have textures (by loading it or calling \ref applyTexture).
+        \note Contains data only if your mesh has textures (by loading it or calling \ref applyTexture).
          */
         std::vector<float2> uv;
 
         /**
         Texture of the Mesh.
 
-        \note Contains data only if your mesh have textures (by loading it or calling \ref applyTexture).
+        \note Contains data only if your mesh has textures (by loading it or calling \ref applyTexture).
          */
         Mat texture;
 
@@ -4263,23 +4823,23 @@ namespace sl {
         size_t getNumberOfTriangles();
 
         /**
-        \brief Updates \ref vertices / \ref normals / \ref triangles / \ref uv from chunks' data pointed by the given chunkList.
-        \param IDs : the index of chunks which will be concatenated. default : (empty).
+        \brief Updates \ref vertices / \ref normals / \ref triangles / \ref uv from chunk data pointed by the given chunkList.
+        \param IDs : the indices of chunks which will be concatenated. default : (empty).
 
         \note If the given chunkList is empty, all chunks will be used to update the current Mesh.
          */
         void updateMeshFromChunkList(chunkList IDs = chunkList());
 
         /**
-        \brief Computes the list of visible chunk from a specific point of view.
-        \param world_reference_pose : the point of view, given in world reference.
+        \brief Computes the list of visible chunks from a specific point of view.
+        \param camera_pose : the point of view, given in world reference.
         \return The list of visible chunks.
          */
         chunkList getVisibleList(Transform camera_pose);
 
         /**
         \brief Computes the list of chunks which are close to a specific point of view.
-        \param world_reference_position : the point of view, given in world reference.
+        \param camera_pose : the point of view, given in world reference.
         \param radius : the radius in defined \ref UNIT.
         \return The list of chunks close to the given point.
          */
@@ -4291,7 +4851,7 @@ namespace sl {
         The resulting mesh in smoothed, small holes are filled and small blobs of non connected triangles are deleted.
 
         \param mesh_filter_params : defines the filtering parameters, for more info checkout the \ref MeshFilterParameters documentation. default : preset.
-        \param update_chunk_only : if set to false the mesh data (vertices/normals/triangles) are updated otherwise only the chunk's data are updated. default : false.
+        \param update_chunk_only : if set to false the mesh data (vertices/normals/triangles) is updated otherwise only the chunk data is updated. default : false.
         \return True if the filtering was successful, false otherwise.
 
         \note The filtering is a costly operation, its not recommended to call it every time you retrieve a mesh but at the end of your spatial mapping process.
@@ -4302,15 +4862,15 @@ namespace sl {
         \brief Applies texture to the mesh.
 
         By using this function you will get access to \ref uv, and \ref texture.
-        The number of triangles in the mesh may slightly differ before and after calling this functions due to missing texture information.
-        There is only one texture for the mesh, the uv of each chunks are expressed for it in its entirety.
+        The number of triangles in the mesh may slightly differ before and after calling this function due to missing texture information.
+        There is only one texture for the mesh, the uv of each chunk are expressed for it in its entirety.
         Vectors of vertices/normals and uv have now the same size.
 
-        \param texture_format : define the number of channels desired for the computed texture. default : MESH_TEXTURE_FORMAT::RGB.
+        \param texture_format : defines the number of channels desired for the computed texture. default : MESH_TEXTURE_FORMAT::RGB.
         \return True if the texturing was successful, false otherwise.
 
         \note This function can be called as long as you do not start a new spatial mapping process, due to shared memory.
-        \note This function can require a lot of computation time depending on the number of triangles in the mesh. Its recommended to call it once a the end of your spatial mapping process.
+        \note This function can require a lot of computation time depending on the number of triangles in the mesh. It's recommended to call it once at the end of your spatial mapping process.
 
         \warning The save_texture parameter in SpatialMappingParameters must be set as true when enabling the spatial mapping to be able to apply the textures.
         \warning The mesh should be filtered before calling this function since \ref filter will erase the textures, the texturing is also significantly slower on non-filtered meshes.
@@ -4318,11 +4878,11 @@ namespace sl {
         bool applyTexture(MESH_TEXTURE_FORMAT texture_format = MESH_TEXTURE_FORMAT::RGB);
 
         /**
-        \brief Merges currents chunks.
+        \brief Merges current chunks.
 
         This can be used to merge chunks into bigger sets to improve rendering process.
 
-        \param faces_per_chunk : define the new number of faces per chunk (useful for Unity that doesn't handle chunks over 65K vertices).
+        \param faces_per_chunk : defines the new number of faces per chunk (useful for Unity that doesn't handle chunks over 65K vertices).
 
         \warning You should not use this function during spatial mapping process because mesh updates will revert this changes.
          */
@@ -4339,20 +4899,20 @@ namespace sl {
         sl::float3 getGravityEstimate();
 
         /**
-        \brief Compute the indices of boundaries vertices.
+        \brief Compute the indices of boundary vertices.
 
-        \return The indices of boundaries vertices.
+        \return The indices of boundary vertices.
          */
         std::vector<int> getBoundaries();
 
         /**
         \brief Saves the current Mesh into a file.
         \param filename : the path and filename of the mesh.
-        \param type : defines the file type (extension). default : MESH_FILE_OBJ.
+        \param type : defines the file type (extension). default : MESH_FILE_FORMAT::OBJ.
         \param IDs : (by default empty) Specify a set of chunks to be saved, if none provided all chunks are saved. default : (empty).
         \return True if the file was successfully saved, false otherwise.
 
-        \note Only \ref MESH_FILE_OBJ support textures data.
+        \note Only \ref MESH_FILE_FORMAT::OBJ support textures data.
         \note This function operates on the Mesh not on the chunks. This way you can save different parts of your Mesh (update your Mesh with \ref updateMeshFromChunkList).
          */
         bool save(String filename, MESH_FILE_FORMAT type = MESH_FILE_FORMAT::OBJ, chunkList IDs = chunkList());
@@ -4360,7 +4920,7 @@ namespace sl {
         /**
         \brief Loads the mesh from a file.
         \param filename : the path and filename of the mesh (do not forget the extension).
-        \param update_chunk_only : if set to false the mesh data (vertices/normals/triangles) are updated otherwise only the chunk's data are updated. default : false.
+        \param update_chunk_only : if set to false the mesh data (vertices/normals/triangles) is updated otherwise only the chunk data is updated. default : false.
         \return True if the loading was successful, false otherwise.
 
         \note Updating the Mesh is time consuming, consider using only Chunks for better performances.
@@ -4392,7 +4952,9 @@ namespace sl {
         HORIZONTAL,
         VERTICAL,
         UNKNOWN,
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4407,7 +4969,7 @@ namespace sl {
     \class Plane
     \brief A plane defined by a point and a normal, or a plane equation
      * Other elements can be extracted such as the mesh, the 3D bounds...
-     \note The plane measurement are expressed in REFERENCE_FRAME defined by the RuntimeParameters measure3D_reference_frame
+     \note The plane measurement are expressed in REFERENCE_FRAME defined by \ref RuntimeParameters.measure3D_reference_frame
      */
 
     class /*@cond SHOWHIDDEN*/SL_SCANNING_EXPORT/*@endcond*/ Plane {
@@ -4420,6 +4982,9 @@ namespace sl {
         Plane();
         ~Plane();
 
+        /**
+        \brief Clears all the data.
+         */
         void clear();
 
         /**
@@ -4588,7 +5153,7 @@ namespace sl {
         std::vector<float4> vertices;
 
         /**
-        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertices.
+        Normals are defined by three components, {nx, ny, nz}. Normals are defined for each vertex.
          */
         std::vector<float3> normals;
 
@@ -4604,8 +5169,8 @@ namespace sl {
         size_t getNumberOfPoints();
 
         /**
-        \brief Updates \ref vertices / \ref normals / \ref colors from chunks' data pointed by the given chunkList.
-        \param IDs : the index of chunks which will be concatenated. default : (empty).
+        \brief Updates \ref vertices / \ref normals / \ref colors from chunk data pointed by the given chunkList.
+        \param IDs : the indices of chunks which will be concatenated. default : (empty).
 
         \note If the given chunkList is empty, all chunks will be used.
          */
@@ -4614,11 +5179,11 @@ namespace sl {
         /**
         \brief Saves the current fused point cloud into a file.
         \param filename : the path and filename of the mesh.
-        \param type : defines the file type (extension). default : MESH_FILE_OBJ.
-        \param IDs : (by default empty) Specify a set of chunks to be saved, if none provided all chunks are saved. default : (empty).
+        \param type : defines the file type (extension). default : MESH_FILE_FORMAT::OBJ.
+        \param IDs : (by default empty) Specifies a set of chunks to be saved, if none provided all chunks are saved. default : (empty).
         \return True if the file was successfully saved, false otherwise.
 
-        \note Only \ref MESH_FILE_OBJ support textures data.
+        \note Only \ref MESH_FILE_FORMAT::OBJ supports texture data.
         \note This function operates on the fused point cloud not on the chunks. This way you can save different parts of your fused point cloud (update with \ref updateFromChunkList).
          */
         bool save(String filename, MESH_FILE_FORMAT type = MESH_FILE_FORMAT::OBJ, chunkList IDs = chunkList());
@@ -4626,7 +5191,7 @@ namespace sl {
         /**
         \brief Loads the fused point cloud from a file.
         \param filename : the path and filename of the fused point cloud (do not forget the extension).
-        \param update_chunk_only : if set to false the fused point cloud data (vertices/normals) are updated otherwise only the chunk's data are updated. default : false.
+        \param update_chunk_only : if set to false the fused point cloud data (vertices/normals) are updated otherwise only the chunk data is updated. default : false.
         \return True if the loading was successful, false otherwise.
 
         \note Updating the fused point cloud is time consuming, consider using only chunks for better performances.
@@ -4658,9 +5223,9 @@ namespace sl {
  * PLEASE READ THIS SOFTWARE LICENSE CAREFULLY. IF YOU DO NOT ACCEPT THIS
  * SOFTWARE LICENSE, DO NOT USE YOUR CAMERA. RETURN IT TO UNUSED TO STEREOLABS
  * FOR A REFUND. Contact STEREOLABS at support@stereolabs.com
- * 
+ *
  * 1. Definitions
- * 
+ *
  * "Authorized Accessory" means a STEREOLABS branded ZED, ZED 2 or ZED Mini, and a STEREOLABS
  * licensed, third party branded, ZED hardware accessory whose packaging bears the official
  * "Licensed for ZED" logo. The ZED camera, ZED 2 camera and the ZED Mini camera are Authorized Accessories
@@ -4670,13 +5235,13 @@ namespace sl {
  * "Unauthorized Accessories" means all hardware accessories other than an Authorized Accessory.
  * "Unauthorized Software" means any software not distributed by STEREOLABS.
  * "You" means the user of a ZED, ZED 2 or ZED Mini camera.
- * 
+ *
  * 2. License
- * 
+ *
  * a. The Software is licensed to You, not sold. You are licensed to use the
  * Software only as downloaded from the stereolabs.com website, and updated by
  * STEREOLABS from time to time. You may not copy or reverse engineer the Software.
- * 
+ *
  * b. As conditions to this Software license, You agree that:
  *   i. You will use Your Software with ZED, ZED 2 or ZED Mini camera only and not with any
  *      other device (including). You will not use Unauthorized Accessories. They may
@@ -4693,22 +5258,22 @@ namespace sl {
  *       systems in the ZED, ZED 2 or ZED Mini camera.
  *   v. STEREOLABS may update the Software from time to time without further notice to You,
  *      for example, to update any technical limitation, security, or anti-piracy system.
- * 
+ *
  * 3. Warranty
- * 
+ *
  * The Software is covered by the Limited Warranty for Your ZED, ZED 2 or ZED Mini camera, and
  * STEREOLABS gives no other guarantee, warranty, or condition for the Software. No one
  * else may give any guarantee, warranty, or condition on STEREOLABS's behalf.
- * 
+ *
  * 4. EXCLUSION OF CERTAIN DAMAGES
- * 
+ *
  * STEREOLABS IS NOT RESPONSIBLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
  * DAMAGES; ANY LOSS OF DATA, PRIVACY, CONFIDENTIALITY, OR PROFITS; OR ANY INABILITY TO
  * USE THE SOFTWARE. THESE EXCLUSIONS APPLY EVEN IF STEREOLABS HAS BEEN ADVISED OF THE
  * POSSIBILITY OF THESE DAMAGES, AND EVEN IF ANY REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
- * 
+ *
  * 5. Choice of Law
- * 
+ *
  * French law governs the interpretation of this Software license and any claim that
  * STEREOLABS has breached it, regardless of conflict of law principles.
  *
@@ -4733,9 +5298,9 @@ namespace sl {
 
 // SDK VERSION NUMBER
 #define ZED_SDK_MAJOR_VERSION 3
-#define ZED_SDK_MINOR_VERSION 2
-#define ZED_SDK_PATCH_VERSION 2
-#define ZED_SDK_BUILD_ID "20566_4b0928a4"
+#define ZED_SDK_MINOR_VERSION 6
+#define ZED_SDK_PATCH_VERSION 4
+#define ZED_SDK_BUILD_ID "38647_f03cc21f"
 
 #define ZED_SDK_VERSION_ATTRIBUTE private: uint32_t _zed_sdk_major_version = ZED_SDK_MAJOR_VERSION, _zed_sdk_minor_version = ZED_SDK_MINOR_VERSION, _zed_sdk_patch_version = ZED_SDK_PATCH_VERSION;
 
@@ -4749,6 +5314,7 @@ int /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ getZEDSDKRuntimeVersion(int &m
 
 extern "C" {
 
+    int /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ getZEDSDKRuntimeVersion_C(int &major, int& minor, int& patch);
     /**
      * \ingroup Core_group
      * \brief Returns the ZED SDK version which the current program has been compiled with.
@@ -4817,7 +5383,6 @@ namespace sl {
     /**
     \enum SIDE
     \ingroup Video_group
-    \ingroup Enumerations
     \brief defines left,right,both to distinguish between left and right or both sides
      */
     enum class SIDE {
@@ -4827,18 +5392,41 @@ namespace sl {
     };
 
     /**
+    \enum FLIP_MODE
+    \ingroup Video_group
+    \brief Gives the camera flip mode
+     */
+    enum FLIP_MODE : int {
+        OFF = 0, /**<  default behavior.*/
+        ON = 1, /**< Images and camera sensors data are flipped useful when your camera is mounted upside down.*/
+        AUTO = 2, /**< Live mode: use the camera orientation (if an IMU is available) to set the flip mode. SVO mode: read the state of this enum when recorded.*/
+        ///@cond SHOWHIDDEN 
+        LAST = 3
+        ///@endcond
+    };
+
+    ///@cond SHOWHIDDEN
+    String /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ toString(const FLIP_MODE& flip_mode);
+
+    inline ::std::ostream& operator<<(::std::ostream& os, const FLIP_MODE& flip_mode) {
+        return os << toString(flip_mode);
+    }
+    ///@endcond
+
+    /**
     \enum RESOLUTION
     \ingroup Video_group
-    \ingroup Enumerations
     \brief Represents the available resolution defined in the \ref cameraResolution list.
-    \note The VGA resolution does respect the 640*480 standard to better fit the camera sensor (672*376 is used).
+    \note The VGA resolution does not respect the 640*480 standard to better fit the camera sensor (672*376 is used).
      */
     enum class RESOLUTION {
-        HD2K, /**< 2208*1242, available framerates: 15 fps.*/
-        HD1080, /**< 1920*1080, available framerates: 15, 30 fps.*/
-        HD720, /**< 1280*720, available framerates: 15, 30, 60 fps.*/
-        VGA, /**< 672*376, available framerates: 15, 30, 60, 100 fps.*/
+        HD2K, /**< 2208*1242 (x2), available framerates: 15 fps.*/
+        HD1080, /**< 1920*1080 (x2), available framerates: 15, 30 fps.*/
+        HD720, /**< 1280*720 (x2), available framerates: 15, 30, 60 fps.*/
+        VGA, /**< 672*376 (x2), available framerates: 15, 30, 60, 100 fps.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4848,6 +5436,12 @@ namespace sl {
         return os << toString(resolution);
     }
     ///@endcond
+
+    /**
+    \ingroup Video_group
+    \brief Returns the actual size of the given resolution
+     */
+    sl::Resolution /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ getResolution(RESOLUTION resolution);
 
     /**
     \enum VIDEO_SETTINGS
@@ -4862,7 +5456,7 @@ namespace sl {
         HUE, /**< Defines the hue control. Affected value should be between 0 and 11.*/
         SATURATION, /**< Defines the saturation control. Affected value should be between 0 and 8.*/
         SHARPNESS, /**< Defines the digital sharpening control. Affected value should be between 0 and 8.*/
-        GAMMA, /** < Defines the ISP gamma control. Affected value should be between 1 and 9.*/
+        GAMMA, /**< Defines the ISP gamma control. Affected value should be between 1 and 9.*/
         GAIN, /**< Defines the gain control. Affected value should be between 0 and 100 for manual control.*/
         EXPOSURE, /**< Defines the exposure control. Affected value should be between 0 and 100 for manual control.\n The exposition is mapped linearly in a percentage of the following max values. Special case for the setExposure(0) that corresponds to 0.17072ms.\n The conversion to milliseconds depends on the framerate: <ul><li>15fps setExposure(100) -> 19.97ms</li><li>30fps setExposure(100) -> 19.97ms</li><li>60fps setExposure(100) -> 10.84072ms</li><li>100fps setExposure(100) -> 10.106624ms</li></ul>*/
         AEC_AGC, /**< Defines if the Gain and Exposure are in automatic mode or not. Setting a Gain or Exposure through @GAIN or @EXPOSURE values will automatically set this value to 0.*/
@@ -4870,7 +5464,9 @@ namespace sl {
         WHITEBALANCE_TEMPERATURE, /**< Defines the color temperature value. Setting a value will automatically set @WHITEBALANCE_AUTO to 0. Affected value should be between 2800 and 6500 with a step of 100.*/
         WHITEBALANCE_AUTO, /**< Defines if the White balance is in automatic mode or not*/
         LED_STATUS, /**< Defines the status of the camera front LED. Set to 0 to disable the light, 1 to enable the light. Default value is on. Requires Camera FW 1523 at least.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     const int VIDEO_SETTINGS_VALUE_AUTO = -1;
@@ -4893,7 +5489,9 @@ namespace sl {
         PERFORMANCE, /**< Computation mode optimized for speed.*/
         QUALITY, /**< Computation mode designed for challenging areas with untextured surfaces.*/
         ULTRA, /**< Computation mode favorising edges and sharpness. Requires more GPU memory and computation power.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4914,7 +5512,9 @@ namespace sl {
                                * Applications example: Obstacle detection, Automated navigation, People detection, 3D reconstruction, measurements.*/
         FILL, /**< This mode outputs a smooth and fully dense depth map.
                            * Applications example: AR/VR, Mixed-reality capture, Image post-processing.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4932,7 +5532,7 @@ namespace sl {
      */
     enum class MEASURE {
         DISPARITY, /**< Disparity map. Each pixel contains 1 float. sl::MAT_TYPE::F32_C1.*/
-        DEPTH, /**< Depth map. Each pixel contains 1 float. sl::MAT_TYPE::F32_C1.*/
+        DEPTH, /**< Depth map. In sl::UNIT defined in sl::InitParameters. Each pixel contains 1 float. sl::MAT_TYPE::F32_C1.*/
         CONFIDENCE, /**< Certainty/confidence of the depth map. Each pixel contains 1 float. sl::MAT_TYPE::F32_C1.*/
         XYZ, /**< Point cloud. Each pixel contains 4 float (X, Y, Z, not used). sl::MAT_TYPE::F32_C4.*/
         XYZRGBA, /**< Colored point cloud. Each pixel contains 4 float (X, Y, Z, color). The color need to be read as an usigned char[4] representing the RGBA color.  sl::MAT_TYPE::F32_C4.*/
@@ -4948,7 +5548,11 @@ namespace sl {
         XYZARGB_RIGHT, /**< Colored point cloud for right sensor. Each pixel contains 4 float (X, Y, Z, color). The color need to be read as an usigned char[4] representing the ARGB color. sl::MAT_TYPE::F32_C4.*/
         XYZABGR_RIGHT, /**< Colored point cloud for right sensor. Each pixel contains 4 float (X, Y, Z, color). The color need to be read as an usigned char[4] representing the ABGR color. sl::MAT_TYPE::F32_C4.*/
         NORMALS_RIGHT, /**< Normals vector for right view. Each pixel contains 4 float (X, Y, Z, 0).  sl::MAT_TYPE::F32_C4.*/
+        DEPTH_U16_MM, /**< Depth map in millimeter whatever the sl::UNIT defined in sl::InitParameters. Invalid values are set to 0, depth values are clamped at 65000.  Each pixel  contains 1 unsigned short. sl::MAT_TYPE::U16_C1.*/
+        DEPTH_U16_MM_RIGHT, /**< Depth map in millimeter for right sensor. Each pixel  contains 1 unsigned short. sl::MAT_TYPE::U16_C1.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4965,21 +5569,23 @@ namespace sl {
     \brief Lists available views.
      */
     enum class VIEW {
-        LEFT, /**< Left RGBA image. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4.  */
-        RIGHT, /**< Right RGBA image. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
+        LEFT, /**< Left BGRA image. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4.  */
+        RIGHT, /**< Right BGRA image. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
         LEFT_GRAY, /**< Left GRAY image. Each pixel contains 1 usigned char. sl::MAT_TYPE::U8_C1. */
         RIGHT_GRAY, /**< Right GRAY image. Each pixel contains 1 usigned char. sl::MAT_TYPE::U8_C1. */
-        LEFT_UNRECTIFIED, /**< Left RGBA unrectified image. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
-        RIGHT_UNRECTIFIED, /**< Right RGBA unrectified image. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
+        LEFT_UNRECTIFIED, /**< Left BGRA unrectified image. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        RIGHT_UNRECTIFIED, /**< Right BGRA unrectified image. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
         LEFT_UNRECTIFIED_GRAY, /**< Left GRAY unrectified image. Each pixel contains 1 usigned char. sl::MAT_TYPE::U8_C1. */
         RIGHT_UNRECTIFIED_GRAY, /**< Right GRAY unrectified image. Each pixel contains 1 usigned char. sl::MAT_TYPE::U8_C1. */
-        SIDE_BY_SIDE, /**< Left and right image (the image width is therefore doubled). Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
-        DEPTH, /**< Color rendering of the depth. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. Use \ref MEASURE "MEASURE::DEPTH" with \ref Camera.retrieveMeasure() to get depth values.*/
-        CONFIDENCE, /**< Color rendering of the depth confidence. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
-        NORMALS, /**< Color rendering of the normals. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
-        DEPTH_RIGHT, /**< Color rendering of the right depth mapped on right sensor, sl::MAT_TYPE::U8_C4. */
-        NORMALS_RIGHT, /**< Color rendering of the normals mapped on right sensor. Each pixel contains 4 usigned char (R,G,B,A). sl::MAT_TYPE::U8_C4. */
+        SIDE_BY_SIDE, /**< Left and right image (the image width is therefore doubled). Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        DEPTH, /**< Color rendering of the depth. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. Use \ref MEASURE "MEASURE::DEPTH" with \ref Camera.retrieveMeasure() to get depth values.*/
+        CONFIDENCE, /**< Color rendering of the depth confidence. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        NORMALS, /**< Color rendering of the normals. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        DEPTH_RIGHT, /**< Color rendering of the right depth mapped on right sensor. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        NORMALS_RIGHT, /**< Color rendering of the normals mapped on right sensor. Each pixel contains 4 usigned char (B,G,R,A). sl::MAT_TYPE::U8_C4. */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -4998,7 +5604,9 @@ namespace sl {
     enum class TIME_REFERENCE {
         IMAGE, /**< Defines the timestamp at the time the frame has been extracted from USB stream. */
         CURRENT, /**<  Defines the timestamp at the time of the function call. */
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5019,7 +5627,9 @@ namespace sl {
         OK, /**< Positional tracking is working normally.*/
         OFF, /**< Positional tracking is not enabled.*/
         FPS_TOO_LOW, /**< Effective FPS is too low to give proper results for motion tracking. Consider using PERFORMANCES parameters (DEPTH_MODE_PERFORMANCE, low camera resolution (VGA,HD720))*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5042,7 +5652,9 @@ namespace sl {
         FILE_EMPTY, /**< The spatial memory contains no data, the file is empty.*/
         FILE_ERROR, /**< The spatial memory file has not been written because of a wrong file name.*/
         SPATIAL_MEMORY_DISABLED, /**< The spatial memory learning is disable, no file can be created.*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5054,25 +5666,7 @@ namespace sl {
     ///@endcond
 
     /**
-    \enum REFERENCE_FRAME
-    \ingroup PositionalTracking_group
-    \brief Defines which type of position matrix is used to store camera path and pose.
-     */
-    enum class REFERENCE_FRAME {
-        WORLD, /**< The transform of sl::Pose will contains the motion with reference to the world frame (previously called PATH).*/
-        CAMERA, /**< The transform of sl::Pose will contains the motion with reference to the previous camera frame (previously called POSE).*/
-        LAST
-    };
-
-    ///@cond SHOWHIDDEN
-    String SL_SDK_EXPORT toString(const REFERENCE_FRAME &ref_frame);
-
-    inline ::std::ostream &operator<<(::std::ostream &os, const REFERENCE_FRAME &ref_frame) {
-        return os << toString(ref_frame);
-    }
-    ///@endcond
-
-    /**
+    \enum SPATIAL_MAPPING_STATE
     \ingroup SpatialMapping_group
     \brief Gives the spatial mapping state.
      */
@@ -5082,7 +5676,9 @@ namespace sl {
         NOT_ENOUGH_MEMORY, /**< The maximum memory dedicated to the scanning has been reach, the mesh will no longer be updated.*/
         NOT_ENABLED, /**< Camera::enableSpatialMapping() wasn't called (or the scanning was stopped and not relaunched).*/
         FPS_TOO_LOW, /**< Effective FPS is too low to give proper results for spatial mapping. Consider using PERFORMANCES parameters (DEPTH_MODE_PERFORMANCE, low camera resolution (VGA,HD720), spatial mapping low resolution)*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5094,6 +5690,7 @@ namespace sl {
     ///@endcond
 
     /**
+    \enum SVO_COMPRESSION_MODE
     \ingroup Video_group
     \brief Lists available compression modes for SVO recording.
     \brief sl::SVO_COMPRESSION_MODE::LOSSLESS is an improvement of previous lossless compression (used in ZED Explorer), even if size may be bigger, compression time is much faster.
@@ -5102,7 +5699,9 @@ namespace sl {
         LOSSLESS, /**< PNG/ZSTD (lossless) CPU based compression : avg size = 42% (of RAW).*/
         H264, /**< H264(AVCHD) GPU based compression : avg size = 1% (of RAW). Requires a NVIDIA GPU*/
         H265, /**< H265(HEVC) GPU based compression: avg size = 1% (of RAW). Requires a NVIDIA GPU, Pascal architecture or newer*/
+        ///@cond SHOWHIDDEN 
         LAST
+        ///@endcond
     };
 
     ///@cond SHOWHIDDEN
@@ -5117,18 +5716,7 @@ namespace sl {
     \ingroup Video_group
     \brief Recording structure that contains information about SVO.
      */
-    struct RecordingStatus {
-
-        RecordingStatus() {
-            is_recording = false;
-            is_paused = false;
-            status = false;
-            current_compression_time = 0;
-            current_compression_ratio = 0;
-            average_compression_time = 0;
-            average_compression_ratio = 0;
-        }
-
+    struct /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ RecordingStatus {
         bool is_recording; /**< Recorder status, true if enabled */
         bool is_paused; /**< Recorder status, true if the pause is enabled */
         bool status; /**< Status of current frame. True for success or false if the frame couldn't be written in the SVO file.*/
@@ -5136,26 +5724,13 @@ namespace sl {
         double current_compression_ratio; /**< Compression ratio (% of raw size) for the current frame.*/
         double average_compression_time; /**< Average compression time in ms since beginning of recording.*/
         double average_compression_ratio; /**< Average compression ratio (% of raw size) since beginning of recording.*/
+
+        /**
+        \brief Default constructor. Set all parameters to their default values
+         */
+        RecordingStatus();
     };
 
-    /**
-    \ingroup Video_group
-    \brief Lists available compression modes for SVO recording.
-     */
-    enum  FLIP_MODE : int {
-        OFF = 0, /**<  default behavior.*/
-        ON = 1, /**< Images and camera sensors data are flipped, useful when your camera is mounted upside down.*/
-        AUTO = 2, /**< in live mode: use the camera orientation (if an IMU is available) to set the flip mode, in SVO mode, read the state of this enum when recorded*/
-        LAST
-    };
-
-    ///@cond SHOWHIDDEN
-    String /*@cond SHOWHIDDEN*/SL_SDK_EXPORT/*@endcond*/ toString(const FLIP_MODE& flip_mode);
-
-    inline ::std::ostream& operator<<(::std::ostream& os, const FLIP_MODE& flip_mode) {
-        return os << toString(flip_mode);
-    }
-    ///@endcond
 };
 
 #endif /*__DEFINES_HPP__*/
@@ -5224,7 +5799,6 @@ namespace sl {
 #ifndef __CAMERA_HPP__
 #define __CAMERA_HPP__
 
-#include <cuda.h>
 
 // Stereolabs namespace
 namespace sl {
@@ -5240,7 +5814,7 @@ namespace sl {
     Once passed to the \ref Camera::open() function, these settings will be set for the entire execution life time of the \ref Camera. \n
     You can get further information in the detailed description bellow.\n
 
-    This structure allows you to select multiple parameters for the \ref Camera such as the selected camera, its resolution, depth mode, coordinate system, and unit, of measurement.
+    This structure allows you to select multiple parameters for the \ref Camera such as the selected camera, resolution, depth mode, coordinate system, and units of measurement.
     Once filled with the desired options, it should be passed to the \ref Camera::open function.
 
     \code
@@ -5251,10 +5825,19 @@ namespace sl {
 
         InitParameters init_params; // Set initial parameters
         init_params.sdk_verbose = false; // Disable verbose mode
+
+        // Use the camera in LIVE mode
         init_params.camera_resolution = RESOLUTION::HD1080; // Use HD1080 video mode
         init_params.camera_fps = 30; // Set fps at 30
-        // Other parameters are left to their default values
 
+        // Or Use the camera in SVO (offline) mode
+        //init_params.input.setFromSVOFile("xxxx.svo");
+
+        // Or Use the camera in Stream mode
+        //init_params.input.setFromStream("192.168.1.12",30000);
+
+
+        // Other parameters are left to their default values
         // Open the camera
         ERROR_CODE err = zed.open(init_params);
         if (err != SUCCESS)
@@ -5274,6 +5857,7 @@ namespace sl {
         friend class Camera;
         ZED_SDK_VERSION_ATTRIBUTE
     public:
+
         /**
         Define the chosen camera resolution. Small resolutions offer higher framerate and lower computation time.\n
         In most situations, the \ref RESOLUTION "RESOLUTION::HD720" at 60 fps is the best balance between image quality and framerate.\n
@@ -5291,9 +5875,9 @@ namespace sl {
         int camera_fps;
 
         /**
-        If you are using the camera upside down, setting this parameter to true will cancel its rotation. The images will be horizontally flipped.
+        If you are using the camera upside down, setting this parameter to FLIP_MODE::ON will cancel its rotation. The images will be horizontally flipped.
         \n default : FLIP_MODE::AUTO
-         * From ZED SDK 3.2 a new FLIP_MODE enum was introduced to add the automatic flip mode detection based on the IMU gravity detection.
+         * From ZED SDK 3.2 a new FLIP_MODE enum was introduced to add the automatic flip mode detection based on the IMU gravity detection. This only works for ZED-M or ZED2 cameras.
          */
         int camera_image_flip;
 
@@ -5303,6 +5887,7 @@ namespace sl {
         If set to true, self-calibration will be disabled and calibration parameters won't be optimized.\n
         default : false
         \note In most situations, self calibration should remain enabled.
+        \note You can also trigger the self-calibration at anytime after open() by calling \ref Camera::UpdateSelfCalibration(), even if this parameter is set to true.
 
          */
         bool camera_disable_self_calib;
@@ -5319,14 +5904,14 @@ namespace sl {
         /**
         When playing back an SVO file, each call to \ref Camera::grab() will extract a new frame and use it.\n
         However, this ignores the real capture rate of the images saved in the SVO file.\n
-        Enabling this parameter will bring the SDK closer to a real simulation when playing back a file by using the images' timestamps. However, calls to \ref Camera::grab() will return an error when trying to play to fast, and frames will be dropped when playing too slowly.
+        Enabling this parameter will bring the SDK closer to a real simulation when playing back a file by using the images' timestamps. However, calls to \ref Camera::grab() will return an error when trying to play too fast, and frames will be dropped when playing too slowly.
 
         \n default : false
          */
         bool svo_real_time_mode;
 
         /**
-        The SDK offers several \ref DEPTH_MODE options offering various level of performance and accuracy.
+        The SDK offers several \ref DEPTH_MODE options offering various levels of performance and accuracy.
         \n This parameter allows you to set the \ref DEPTH_MODE that best matches your needs.
         \n default : \ref DEPTH_MODE "DEPTH_MODE::PERFORMANCE"
          */
@@ -5337,7 +5922,7 @@ namespace sl {
         \n This parameter enables a stabilization filter that reduces these oscillations.
         \n default : true
         \note The stabilization uses the positional tracking to increase its accuracy, so the Positional Tracking module will be enabled automatically when set to true.\n
-        Notice that calling \ref Camera::enablePositionalTracking with your own parameters afterward is still possible.
+        Notice that calling \ref Camera::enablePositionalTracking with your own parameters afterwards is still possible.
          */
         int depth_stabilization;
 
@@ -5357,9 +5942,9 @@ namespace sl {
         float depth_minimum_distance;
 
         /**
-          When estimating the depth, the SDK uses this upper limit to turn higher values into \ref TOO_FAR ones.
-         The current maximum distance that can be computed in the defined \ref UNIT.
-        
+        Defines the current maximum distance that can be computed in the defined \ref UNIT.
+        When estimating the depth, the SDK uses this upper limit to turn higher values into \ref TOO_FAR ones.
+                
         \note Changing this value has no impact on performance and doesn't affect the positional tracking nor the spatial mapping. (Only the depth, point cloud, normals)
          */
         float depth_maximum_distance;
@@ -5372,7 +5957,7 @@ namespace sl {
 
         /**
         Positional tracking, point clouds and many other features require a given \ref COORDINATE_SYSTEM to be used as reference.
-        This parameter allows you to select the \ref COORDINATE_SYSTEM use by the \ref Camera to return its measures.
+        This parameter allows you to select the \ref COORDINATE_SYSTEM used by the \ref Camera to return its measures.
         \n This defines the order and the direction of the axis of the coordinate system.
         \n default : \ref COORDINATE_SYSTEM "COORDINATE_SYSTEM::IMAGE"
          */
@@ -5388,13 +5973,13 @@ namespace sl {
         CUdevice sdk_gpu_id;
 
         /**
-        This parameters allows you to enable the verbosity of the SDK to get a variety of runtime information in the console.
-        When developing an application, enabling verbose mode can help you understand the current SDK behavior.
+        This parameter allows you to enable the verbosity of the SDK to get a variety of runtime information in the console.
+        When developing an application, enabling verbose (sdk_verbose>=1) mode can help you understand the current SDK behavior.
         \n However, this might not be desirable in a shipped version.
-        \n default : false
+        \n default : 0 = no verbose message
         \note The verbose messages can also be exported into a log file. See \ref sdk_verbose_log_file for more.
          */
-        bool sdk_verbose;
+        int sdk_verbose;
 
         /**
         When \ref sdk_verbose is enabled, this parameter allows you to redirect both the SDK verbose messages and your own application messages to a file.
@@ -5402,7 +5987,7 @@ namespace sl {
 
         \note Setting this parameter to any value will redirect all std::cout calls of the entire program. This means that your own std::cout calls will be redirected to the log file.
         \note This parameter can be particularly useful for creating a log system, and with Unreal or Unity applications that don't provide a standard console output.
-        \warning The log file won't be clear after successive executions of the application. This means that it can grow indefinitely if not cleared.
+        \warning The log file won't be cleared after successive executions of the application. This means that it can grow indefinitely if not cleared.
          */
         String sdk_verbose_log_file;
 
@@ -5459,9 +6044,9 @@ namespace sl {
         InputType input;
 
         /**
-        Set the optional path where the SDK has to search for the settings files (SN<XXXX>.conf files). Those file contains the calibration of the camera.
+        Set the optional path where the SDK has to search for the settings file (SN<XXXX>.conf file). This file contains the calibration information of the camera.
         \n default : (empty). The SNXXX.conf file will be searched in the default directory (/usr/local/zed/settings/ for Linux or C:/ProgramData/stereolabs/settings for Windows)
-        \note if a path is specified and no files has been found, the SDK will search on the default path (see default) for the *.conf file.
+        \note if a path is specified and no file has been found, the SDK will search on the default path (see default) for the *.conf file.
         \note Automatic download of conf file (through ZED Explorer or the installer) will still download the files on the default path. If you want to use another path by using this entry, make sure to copy the file in the proper location.
 
         \code
@@ -5473,6 +6058,14 @@ namespace sl {
          */
         String optional_settings_path;
 
+        /**
+        Set an optional file path where the SDK can find a file containing the calibration information of the camera computed by OpenCV.
+        \note Using this will disable the factory calibration of the camera.
+        \n the file must be in a XML/YAML/JSON formatting provided by OpenCV. It also must contains the following key :
+        \n Size, K_LEFT (intrinsic left), K_RIGHT (intrinsic right), D_LEFT (distortion left), D_RIGHT (distortion right), R (extrinsic rotation), T ( extrinsic translation)
+        \warning Erroneous calibration values can lead to poor accuracy in all SDK modules.
+         */
+        String optional_opencv_calibration_file;
 
         /**
         Force the motion sensors opening of the ZED 2 / ZED-M to open the camera.
@@ -5480,7 +6073,7 @@ namespace sl {
         \n If set to false, the SDK will try to <b>open and use</b> the IMU (second USB device on USB2.0) and will open the camera successfully even if the sensors failed to open.
         \n This can be used for example when using a USB3.0 only extension cable (some fiber extension for example).
         \n This parameter only impacts the LIVE mode.
-        \n If set to true, the camera will fail to open if the sensors cannot be opened. This parameter should use when the IMU data must be available, such as Object Detection module or when the gravity is needed.
+        \n If set to true, the camera will fail to open if the sensors cannot be opened. This parameter should be used when the IMU data must be available, such as Object Detection module or when the gravity is needed.
         \note This setting is not taken into account for ZED camera since it does not include sensors.
          */
         bool sensors_required;
@@ -5488,10 +6081,19 @@ namespace sl {
         /**
         Enable or Disable the Enhanced Contrast Technology, to improve image quality.
         \n default : true.
-        \n If set to true, iamge enhancement will be activated in camera ISP. Otherwise, the image will not be enhanced by the IPS.
+        \n If set to true, image enhancement will be activated in camera ISP. Otherwise, the image will not be enhanced by the IPS.
         \n This only works for firmware version starting from 1523 and up.
          */
         bool enable_image_enhancement;
+
+        /**
+        Define a timeout in seconds after which an error is reported if the \ref open() command fails.
+        Set to '-1' to try to open the camera endlessly without returning error in case of failure.
+        Set to '0' to return error in case of failure at the first attempt.
+        \n This parameter only impacts the LIVE mode.
+        \n default  : 5.0f
+         */
+        float open_timeout_sec;
 
         /**
         \brief Default constructor. All the parameters are set to their default and optimized values.
@@ -5519,39 +6121,21 @@ namespace sl {
                 InputType input_type = InputType(),
                 String optional_settings_path_ = String(),
                 bool sensors_required_ = false,
-                bool enable_image_enhancement_ = true)
-        : camera_resolution(camera_resolution_)
-        , camera_fps(camera_fps_)
-        , svo_real_time_mode(svo_real_time_mode_)
-        , depth_mode(depth_mode_)
-        , coordinate_units(coordinate_units_)
-        , coordinate_system(coordinate_system_)
-        , sdk_verbose(sdk_verbose_)
-        , sdk_gpu_id(sdk_gpu_id_)
-        , depth_minimum_distance(depth_minimum_distance_)
-        , depth_maximum_distance(depth_maximum_distance_)
-        , camera_disable_self_calib(camera_disable_self_calib_)
-        , camera_image_flip(camera_image_flip_)
-        , enable_right_side_measure(enable_right_side_measure_)
-        , sdk_verbose_log_file(sdk_verbose_log_file_)
-        , depth_stabilization(depth_stabilization_)
-        , sdk_cuda_ctx(sdk_cuda_ctx_)
-        , input(input_type)
-        , optional_settings_path(optional_settings_path_)
-        , sensors_required(sensors_required_)
-        , enable_image_enhancement(enable_image_enhancement_) {
-        }
+                bool enable_image_enhancement_ = true,
+                String optional_opencv_calibration_file_ = String(),
+                float open_timeout_sec_ = 5.0f);
 
         /**
         This function saves the current set of parameters into a file to be reloaded with the \ref load() function.
-        \param filename : the path to the file in which the parameters will be stored.
+        \param filename : the name of the file which will be created to store the parameters (extension '.yml' will be added if not set).
         \return True if file was successfully saved, otherwise false.
+        \warning For security reason, the file must not exist. In case a file already exists, Function will return false and existing file will not be updated.
 
         \code
         InitParameters init_params; // Set initial parameters
         init_params.sdk_verbose = True; // Enable verbose mode
         init_params.input.setFromSVOFile("/path/to/file.svo"); // Selects the and SVO file to be read
-        init_params.save("initParameters.conf"); // Export the parameters into a file
+        init_params.save("initParameters.yml"); // Export the parameters into a file
         \endcode
 
          */
@@ -5559,15 +6143,15 @@ namespace sl {
 
         /**
         This function set the other parameters from the values contained in a previously \ref save() "saved" file.
-        \param filename : the path to the file from which the parameters will be loaded.
+        \param filename : the path to the file from which the parameters will be loaded.  (extension '.yml' will be added at the end of the filename if not set).
         \return True if the file was successfully loaded, otherwise false.
 
         \code
         InitParameters init_params; // Set initial parameters
-        init_params.load("initParameters.conf"); // Load the init_params from a previously exported file
+        init_params.load("initParameters.yml"); // Load the init_params from a previously exported file
         \endcode
 
-        \note As the InitParameters files can be easily modified manually (using a text editor) this functions allows you to test various settings without re-compiling your application.
+        \note As the InitParameters files can be easily modified manually (using a text editor) this function allows you to test various settings without re-compiling your application.
          */
         bool load(String filename);
     };
@@ -5606,33 +6190,29 @@ namespace sl {
 
         /**
         Threshold to reject depth values based on their confidence.
-
-        Each depth pixel has a corresponding confidence. (\ref MEASURE "MEASURE::CONFIDENCE")
-        \n A lower value means more confidence and precision (but less density). An upper value reduces filtering (more density, less certainty).
-        \n - \b setConfidenceThreshold(100) will allow values from \b 0 to \b 100. (no filtering)
-        \n - \b setConfidenceThreshold(90) will allow values from \b 10 to \b 100. (filtering lowest confidence values)
-        \n - \b setConfidenceThreshold(30) will allow values from \b 70 to \b 100. (keeping highest confidence values and lowering the density of the depth map)
-
-        The value should be in [1,100].         
+        \n Each depth pixel has a corresponding confidence. (\ref MEASURE "MEASURE::CONFIDENCE"), the confidence range is [1,100].
         \n By default, the confidence threshold is set at 100, meaning that no depth pixel will be rejected.
-
+        \n Decreasing this value will remove depth data from both objects edges and low textured areas, to keep only confident depth estimation data.
+         * Pixels with a value close to 100 are not to be trusted. Accurate depth pixels tends to be closer to lower values.
+         * It can be seen as a probability of error, scaled to 100.
          */
         int confidence_threshold = 100;
 
+        /*@cond SHOWHIDDEN*/
         /**
         Threshold to reject depth values based on their textureness confidence.
         \deprecated see texture_confidence_threshold.
          */
-        /*@cond SHOWHIDDEN*/SL_DEPRECATED("use texture_confidence_threshold instead")/*@endcond*/
+        SL_DEPRECATED("use texture_confidence_threshold instead")
         int textureness_confidence_threshold = 100;
+        /*@endcond*/
 
         /**
         Threshold to reject depth values based on their texture confidence.
-
-        A lower value means more confidence and precision (but less density). An upper value reduces filtering (more density, less certainty).
-        The value should be in [1,100].
-        By default, the confidence threshold is set at 100, meaning that no depth pixel will be rejected.
-
+        \n The texture confidence range is [1,100].
+        \n By default, the texture confidence threshold is set at 100, meaning that no depth pixel will be rejected.
+        \n Decreasing this value will remove depth data from image areas which are uniform.
+         * Pixels with a value close to 100 are not to be trusted. Accurate depth pixels tends to be closer to lower values.
          */
         int texture_confidence_threshold = 100;
 
@@ -5640,26 +6220,22 @@ namespace sl {
         \brief Default constructor, set all parameters to their default and optimized values.
          */
         RuntimeParameters(SENSING_MODE sensing_mode_ = SENSING_MODE::STANDARD,
-                bool enable_depth_ = true, int confidence_threshold_ = 100,
+                bool enable_depth_ = true,
+                int confidence_threshold_ = 100,
                 int texture_confidence_threshold_ = 100,
-                REFERENCE_FRAME measure3D_reference_frame_ = REFERENCE_FRAME::CAMERA)
-        : sensing_mode(sensing_mode_)
-        , enable_depth(enable_depth_)
-        , confidence_threshold(confidence_threshold_)
-        , texture_confidence_threshold(texture_confidence_threshold_)
-        , measure3D_reference_frame(measure3D_reference_frame_) {
-        }
+                REFERENCE_FRAME measure3D_reference_frame_ = REFERENCE_FRAME::CAMERA);
 
         /**
         \brief Saves the current set of parameters into a file.
-        \param filename : the path to the file in which the parameters will be stored.
+        \param filename : the name of the file which will be created to store the parameters (extension '.yml' will be added if not set).
         \return true if the file was successfully saved, otherwise false.
+        \warning For security reason, the file must not exist. In case a file already exists, Function will return false and existing file will not be updated.
          */
         bool save(String filename);
 
         /**
         \brief Loads the values of the parameters contained in a file.
-        \param filename : the path to the file from which the parameters will be loaded.
+        \param filename : the path to the file from which the parameters will be loaded.  (extension '.yml' will be added at the end of the filename if not detected).
         \return true if the file was successfully loaded, otherwise false.
          */
         bool load(String filename);
@@ -5708,10 +6284,10 @@ namespace sl {
         /**
         This mode initializes the tracking to be aligned with the floor plane to better position the camera in space.
         \n default: false
-        \note: This launches floor plane detection in the background until a suitable floor plane is found.
+        \note This launches floor plane detection in the background until a suitable floor plane is found.
         The tracking is in POSITIONAL_TRACKING_STATE::SEARCHING state.
 
-        \warning: This features work best with the ZED-M since it needs an IMU to classify the floor.
+        \warning This features work best with the ZED-M since it needs an IMU to classify the floor.
          * The ZED needs to look at the floor during initialization for optimum results.
          */
         bool set_floor_as_origin;
@@ -5722,7 +6298,7 @@ namespace sl {
 
         \note Loading an area file will start a search phase, during which the camera will try to position itself in the previously learned area.
 
-        \warning: The area file describes a specific location. If you are using an area file describing a different location, the tracking function will continuously search for a position and may not find a correct one.
+        \warning The area file describes a specific location. If you are using an area file describing a different location, the tracking function will continuously search for a position and may not find a correct one.
         \warning The '.area' file can only be used with the same depth mode (\ref MODE) as the one used during area recording.
          */
         String area_file_path;
@@ -5736,7 +6312,7 @@ namespace sl {
 
         /**
         This setting allows you define the camera as static. If true, it will not move in the environment. This allows you to set its position using initial_world_transform.
-        \n All SDK functionalities requiring positional tracking will be enabled.
+        \n All SDK functionalities requiring positional tracking will be enabled without additional computation
         \n Camera::getPosition() will return the value set as initial_world_transform for the PATH, and identity as the POSE.
          */
         bool set_as_static;
@@ -5744,24 +6320,21 @@ namespace sl {
         /**
         \brief  Default constructor. Sets all parameters to their default and optimized values.
          */
-        PositionalTrackingParameters(Transform init_pos = Transform(), bool _enable_memory = true, bool _enable_pose_smoothing = false, String _area_path = String(),
-                bool _set_floor_as_origin = false, bool _enable_imu_fusion = true, bool _set_as_static = false)
-        : initial_world_transform(init_pos)
-        , enable_area_memory(_enable_memory)
-        , enable_pose_smoothing(_enable_pose_smoothing)
-        , area_file_path(_area_path)
-        , set_floor_as_origin(_set_floor_as_origin)
-        , enable_imu_fusion(_enable_imu_fusion)
-        , set_as_static(_set_as_static) {
-        }
+        PositionalTrackingParameters(Transform init_posistion_ = Transform(),
+                bool enable_memory_ = true,
+                bool enable_pose_smoothing_ = false,
+                String area_path_ = String(),
+                bool set_floor_as_origin_ = false,
+                bool enable_imu_fusion_ = true,
+                bool set_as_static_ = false);
 
         /**
         \brief Saves the current set of parameters into a file.
-        \param filename: the path to the file in which the parameters will be stored.
+        \param filename : the name of the file which will be created to store the parameters (extension '.yml' will be added if not set).
         \return true if the file was successfully saved, otherwise false.
+        \warning For security reason, the file must not exist. In case a file already exists, Function will return false and existing file will not be updated.
          */
         bool save(String filename);
-
         /**
         \brief Loads the values of the parameters contained in a file.
         \param filename: the path to the file from which the parameters will be loaded.
@@ -5775,7 +6348,7 @@ namespace sl {
     \ingroup SpatialMapping_group
     \brief Sets the spatial mapping parameters.
 
-    Instantiating with the default constructor sets all parameters to their default values.
+    Instantiating with the default constructor will set all parameters to their default values.
     \n You can customize these values to fit your application, and then save them to a preset to be loaded in future executions.
 
     \note Users can adjust these parameters as they see fit.
@@ -5793,19 +6366,25 @@ namespace sl {
         \brief Lists the types of spatial maps that can be created.
          */
         enum class SPATIAL_MAP_TYPE {
-            MESH, /**< Represent a surface with faces, 3D points are linked by edges, no color information.*/
-            FUSED_POINT_CLOUD /**< Geometry is represented by a set of 3D colored points.*/
+            MESH, /**< Represents a surface with faces, 3D points are linked by edges, no color information.*/
+            FUSED_POINT_CLOUD, /**< Geometry is represented by a set of 3D colored points.*/
+            ///@cond SHOWHIDDEN 
+            LAST
+            ///@endcond
         };
 
         /**
         \enum MAPPING_RESOLUTION
         \ingroup SpatialMapping_group
-        \brief List the spatial mapping resolution presets.
+        \brief Lists the spatial mapping resolution presets.
          */
         enum class MAPPING_RESOLUTION {
-            HIGH, /**< Create a detail geometry, requires lots of memory.*/
-            MEDIUM, /**< Smalls variations in the geometry will disappear, useful for big object*/
-            LOW /**< Keeps only huge variations of the geometry , useful outdoor.*/
+            HIGH, /**< Creates a detailed geometry, requires lots of memory.*/
+            MEDIUM, /**< Small variations in the geometry will disappear, useful for big objects*/
+            LOW, /**< Keeps only huge variations of the geometry, useful for outdoor purposes.*/
+            ///@cond SHOWHIDDEN 
+            LAST
+            ///@endcond
         };
 
         /**
@@ -5816,8 +6395,11 @@ namespace sl {
         enum class MAPPING_RANGE {
             SHORT, /**< Only depth close to the camera will be used during spatial mapping.*/
             MEDIUM, /**< Medium depth range.*/
-            LONG, /**< Takes into account objects that are far, useful outdoor.*/
-            AUTO /**< Depth range will be computed based on current Camera states and parameters.*/
+            LONG, /**< Takes into account objects that are far, useful for outdoor purposes.*/
+            AUTO, /**< Depth range will be computed based on current Camera states and parameters.*/
+            ///@cond SHOWHIDDEN 
+            LAST
+            ///@endcond
         };
 
         /**
@@ -5829,19 +6411,18 @@ namespace sl {
                 bool save_texture_ = false,
                 bool use_chunk_only_ = false,
                 bool reverse_vertex_order_ = false,
-                SPATIAL_MAP_TYPE map_type = SPATIAL_MAP_TYPE::MESH
-                );
+                SPATIAL_MAP_TYPE map_type = SPATIAL_MAP_TYPE::MESH);
 
         /**
         \brief Returns the resolution corresponding to the given \ref MAPPING_RESOLUTION preset.
-        \param mapping_resolution: The desired \ref MAPPING_RESOLUTION. Default: \ref MAPPING_RESOLUTION::HIGH.
+        \param mapping_resolution: The desired \ref MAPPING_RESOLUTION. Default: \ref MAPPING_RESOLUTION::MEDIUM.
         \return The resolution in meters.
          */
         static float get(MAPPING_RESOLUTION mapping_resolution = MAPPING_RESOLUTION::MEDIUM);
 
         /**
         \brief Sets the resolution corresponding to the given \ref MAPPING_RESOLUTION preset.
-        \param mapping_resolution: The desired \ref MAPPING_RESOLUTION.  Default: \ref MAPPING_RESOLUTION::HIGH.
+        \param mapping_resolution: The desired \ref MAPPING_RESOLUTION.  Default: \ref MAPPING_RESOLUTION::MEDIUM.
          */
         void set(MAPPING_RESOLUTION mapping_resolution = MAPPING_RESOLUTION::MEDIUM);
 
@@ -5854,7 +6435,7 @@ namespace sl {
 
         /**
         \brief Sets the maximum value of the depth corresponding to the given \ref MAPPING_RANGE preset.
-        \param mapping_range: The desired \ref MAPPING_RANGE. Default: \ref MAPPING_RANGE.MEDIUM.
+        \param mapping_range: The desired \ref MAPPING_RANGE. Default: \ref MAPPING_RANGE::MEDIUM.
          */
         void set(MAPPING_RANGE mapping_range = MAPPING_RANGE::MEDIUM);
 
@@ -5867,7 +6448,7 @@ namespace sl {
         static float getRecommendedRange(MAPPING_RESOLUTION mapping_resolution, Camera& camera);
 
         /**
-        \brief  Returns the recommended maximum depth value for the given \ref MAPPING_RESOLUTION preset.
+        \brief  Returns the recommended maximum depth value for the given resolution in meters
         \param resolution_meters: The desired resolution in meters.
         \param camera: The Camera object that will run the spatial mapping.
         \return The maximum value of the depth in meters.
@@ -5880,7 +6461,7 @@ namespace sl {
         float resolution_meter = 0.05f;
 
         /**
-        \brief The resolutions allowed by the spatial mapping.
+        \brief The resolution allowed by the spatial mapping.
         \n allowed_resolution.first is the minimum value allowed.
         \n allowed_resolution.second is the maximum value allowed.
          */
@@ -5905,7 +6486,7 @@ namespace sl {
         \brief Set to true if you want to be able to apply the texture to your mesh after its creation.
 
         \note This option will consume more memory.
-        \note This option is only available for SPATIAL_MAP::TYPE_MESH
+        \note This option is only available for \ref SPATIAL_MAP_TYPE::MESH
          */
         bool save_texture = false;
 
@@ -5917,14 +6498,14 @@ namespace sl {
         bool use_chunk_only = false;
 
         /**
-        \brief The maximum CPU memory (in megabytes) allocated for the meshing process.
+        \brief The maximum CPU memory (in MB) allocated for the meshing process.
          */
         int max_memory_usage = 2048;
 
         /**
         \brief Specify if the order of the vertices of the triangles needs to be inverted. If your display process does not handle front and back face culling, you can use this to correct it.
 
-        \note This option is only available for SPATIAL_MAP::TYPE_MESH
+        \note This option is only available for \ref SPATIAL_MAP_TYPE::MESH
          */
         bool reverse_vertex_order = false;
 
@@ -5935,8 +6516,9 @@ namespace sl {
 
         /**
         \brief Saves the current set of parameters into a file.
-        \param filename: the path to the file in which the parameters will be stored.
-        \return Ttrue if the file was successfully saved. false otherwise.
+        \param filename : the name of the file which will be created to store the parameters (extension '.yml' will be added if not set).
+        \return True if the file was successfully saved. False otherwise.
+        \warning For security reason, the file must not exist. In case a file already exists, Function will return false and existing file will not be updated.
          */
         bool save(String filename);
 
@@ -5984,7 +6566,7 @@ namespace sl {
          *  | H265             |  HD1080      |   30  |    11000       |
          *  | H265             |  HD720       |   60  |     6000       |
 
-        \note Available range : [1000 - 30000]
+        \note Available range : [1000 - 60000]
          */
         unsigned int bitrate = 8000;
 
@@ -6000,7 +6582,7 @@ namespace sl {
         \brief Enable/Disable adaptive bitrate
         \note Bitrate will be adjusted depending the number of packet dropped during streaming.
         \note if activated, bitrate can vary between [bitrate/4, bitrate]
-        \Warning Currently, the adaptive bitrate only works when "sending" device is a NVIDIA Jetson (X1,X2,Xavier,Nano)
+        \warning Currently, the adaptive bitrate only works when "sending" device is a NVIDIA Jetson (X1,X2,Xavier,Nano)
          */
         bool adaptative_bitrate = false;
 
@@ -6019,9 +6601,9 @@ namespace sl {
          \brief defines the target framerate for the streaming output.
          \warning This framerate must be below or equal to the camera framerate. Allowed framerates are 15,30, 60 or 100 if possible.
          Any other values will be discarded and camera FPS will be taken.
-         \default 0 means that the camera framerate will be taken
+         \ndefault : 0, meaning that the camera framerate will be taken
          */
-        unsigned int target_framerate  = 0;
+        unsigned int target_framerate = 0;
 
 
         /**
@@ -6033,7 +6615,7 @@ namespace sl {
                 int gop_size_ = -1,
                 bool adaptative_bitrate_ = false,
                 unsigned short chunk_size_ = 32768,
-                unsigned int target_framerate_ =0
+                unsigned int target_framerate_ = 0
                 );
     };
 
@@ -6053,13 +6635,13 @@ namespace sl {
         String video_filename;
 
         /**
-        \brief compression_mode : can be one of the \ref SVO_COMPRESSION_MODE enum
+        \brief can be one of the \ref SVO_COMPRESSION_MODE enum
          */
         SVO_COMPRESSION_MODE compression_mode = SVO_COMPRESSION_MODE::H264;
 
         /**
-         \brief bitrate :  override default bitrate of the SVO file, in KBits/s. Only works if \ref SVO_COMPRESSION_MODE is H264 or H265.
-         \default : 0 means default values (depends on the resolution)
+         \brief overrides default bitrate of the SVO file, in KBits/s. Only works if \ref SVO_COMPRESSION_MODE is H264 or H265.
+         \n default : 0 means default values (depends on the resolution)
          \note Available range : 0 or [1000 - 60000]
          */
         unsigned int bitrate = 0;
@@ -6070,9 +6652,9 @@ namespace sl {
          it must respect camera_framerate%target_framerate==0
          Allowed framerates are 15,30, 60 or 100 if possible.
          Any other values will be discarded and camera FPS will be taken.
-         \default 0 means that the camera framerate will be taken
+         \n default : 0, meaning that the camera framerate will be taken
          */
-        unsigned int target_framerate  = 0;
+        unsigned int target_framerate = 0;
 
         /**
         \brief In case of streaming input, if set to false, it will avoid decoding/re-encoding and convert directly streaming input into a SVO file.
@@ -6081,10 +6663,6 @@ namespace sl {
          */
         bool transcode_streaming_input = false;
 
-
-
-
-
         /**
         \brief Default constructor. Set all parameters to their default values
          */
@@ -6092,13 +6670,45 @@ namespace sl {
                 SVO_COMPRESSION_MODE compression_mode_ = SVO_COMPRESSION_MODE::H264,
                 unsigned int target_framerate_ = 0,
                 unsigned int bitrate_ = 0,
-                bool transcode_streaming_input_=false) :
-        video_filename(video_filename_)
-        , compression_mode(compression_mode_)
-        , bitrate(bitrate_)
-        , target_framerate(target_framerate_)
-        , transcode_streaming_input(transcode_streaming_input_){
-        }
+                bool transcode_streaming_input_ = false);
+    };
+
+    /**
+      \class BatchParameters
+      \ingroup Object_group
+      \brief sets batch trajectory parameters
+
+      The default constructor sets all parameters to their default settings.
+
+      \note Parameters can be user adjusted.
+     */
+    struct /*@cond SHOWHIDDEN*/ SL_SDK_EXPORT /*@endcond*/ BatchParameters {
+        /**
+        \brief Defines if the Batch option in the object detection module is enabled. Batch queueing system provides:
+         *  - Deep-Learning based re-identification
+         *  - Trajectory smoothing and filtering
+         \note To activate this option, enable must be set to true.
+         */
+        bool enable = false;
+
+        /**
+        \brief Max retention time in seconds of a detected object. After this time, the same object will mostly have a different ID.
+         */
+        float id_retention_time = 240;
+
+        /**
+        \brief Trajectories will be output in batch with the desired latency in seconds.
+        During this waiting time, re-identification of objects is done in the background.
+        Specifying a short latency will limit the search ( falling in timeout) for previously seen object IDs but will be closer to real time output.
+        Specifying a long latency will reduce the change of timeout in Re-ID but increase difference with live output.
+         */
+        float latency = 2.f;
+
+        /**
+        \brief Default constructor. Set all parameters to their default values
+         */
+        BatchParameters(bool enable = false, float id_retention_time = 240.f,
+                float batch_duration = 2.f);
     };
 
     /**
@@ -6127,17 +6737,49 @@ namespace sl {
          */
         bool enable_mask_output = false;
 
-
         /**
         \brief Enable human pose estimation with skeleton keypoints output
          */
         DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX;
 
         /**
+        \brief Defines if the body fitting will be applied
+         */
+        bool enable_body_fitting = false;
+
+        /**
+         * \brief Defines the body format outputed by the sdk when \ref retrieveObjects is called.
+         * \warning if BODY_FORMAT::POSE_34, the ZED SDK will automatically enable the fitting \ref enable_body_fitting
+         * 
+         */
+        BODY_FORMAT body_format = BODY_FORMAT::POSE_18;
+
+        /**
+       \brief Defines a upper depth range for detections.
+         * \n Defined in \ref UNIT set at \ref sl::Camera::open.
+         * \n Default value is set to \ref sl::Initparameters::depth_maximum_distance (can not be higher).
+         */
+        float max_range = -1.f;
+
+        /**
+         \brief Batching system parameters.
+         Batching system (introduced in 3.5) performs short-term re-identification with deep learning and trajectories filtering.
+         * \n BatchParameters::enable need to be true to use this feature (by default disabled)
+         */
+        BatchParameters batch_parameters;
+        
+        /**
         \brief Default constructor. Set all parameters to their default values
          */
-        ObjectDetectionParameters(bool image_sync_ = true, bool enable_tracking_ = true,
-                bool enable_mask_output_ = false, DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX);
+        ObjectDetectionParameters(bool image_sync_ = true,
+                bool enable_tracking_ = true,
+                bool enable_mask_output_ = false,
+                DETECTION_MODEL detection_model = DETECTION_MODEL::MULTI_CLASS_BOX,
+                bool enable_body_fitting_ = false,
+                float max_range_ = -1.f,
+                BatchParameters batch_trajectories_parameters = BatchParameters(),
+                BODY_FORMAT body_format_ = BODY_FORMAT::POSE_18);
+
     };
 
     /**
@@ -6154,19 +6796,40 @@ namespace sl {
         \brief Defines the confidence threshold: interval between 1 and 99. A confidence of 1 meaning a low
          *  threshold, more uncertain objects and 99 very few but very precise objects.
          * If the scene contains a lot of objects, increasing the confidence can slightly speed up the process, since every object instances are tracked.
+         * 
+         * Default confidence threshold value, used as a fallback when ObjectDetectionRuntimeParameters::object_class_detection_confidence_threshold is partially set
          */
         float detection_confidence_threshold;
 
         /**
-        \brief Defines which object type to detect and track, by default (empty vector) everything.
-         * Fewer objects type can slightly speed up the process, since every objects are tracked.
+        \brief Select which object types to detect and track. By default all classes are tracked.
+         * Fewer object types can slightly speed up the process, since every objects are tracked.
+         * Only the selected classes in the vector will be output.
+         
+         In order to get all the available classes, the filter vector must be empty :
+         \code
+         object_class_filter = {};
+         \endcode
+         *
+         To select a set of specific object classes, like vehicles, persons and animals for instance:
+         \code
+         object_class_filter = {OBJECT_CLASS::VEHICLE, OBJECT_CLASS::PERSON, OBJECT_CLASS::ANIMAL};
+         \endcode     
          */
         std::vector<OBJECT_CLASS> object_class_filter;
 
         /**
+        \brief Defines a detection threshold for each classes, can be empty for some classes, 
+         * ObjectDetectionRuntimeParameters::detection_confidence_threshold will be taken as fallback/default value
+         */
+        std::map<OBJECT_CLASS, float> object_class_detection_confidence_threshold;
+
+        /**
         \brief Default constructor. Set all parameters to their default values
          */
-        ObjectDetectionRuntimeParameters(float detection_confidence_threshold = 50, std::vector<OBJECT_CLASS> object_class_filter = std::vector<OBJECT_CLASS> ());
+        ObjectDetectionRuntimeParameters(float detection_confidence_threshold = 20.f,
+                std::vector<OBJECT_CLASS> object_class_filter = {},
+        std::map<OBJECT_CLASS, float> object_class_detection_confidence_threshold = std::map<OBJECT_CLASS, float> ());
     };
 
 
@@ -6195,17 +6858,13 @@ namespace sl {
              // Set configuration parameters
              InitParameters init_params;
              init_params.camera_resolution = RESOLUTION::HD720; // Use HD720 video mode
-             init_params.camera_fps = 60; // Set fps at 60
 
              // Open the camera
              ERROR_CODE err = zed.open(init_params);
              if (err != SUCCESS) {
-                     std::cout << toString(err) << std::endl;
-                     exit(-1);
+                     std::cout << err << " exit program " << std::endl;
+                     return -1;
              }
-
-             sl::RuntimeParameters runtime_param;
-             runtime_param.sensing_mode = SENSING_MODE::STANDARD;
 
              // --- Main loop grabing images and depth values
              // Capture 50 frames and stop
@@ -6213,13 +6872,13 @@ namespace sl {
              Mat image, depth;
              while (i < 50) {
                      // Grab an image
-                     if (zed.grab(runtime_param) == SUCCESS) { // A new image is available if grab() returns SUCCESS
+                     if (zed.grab() == SUCCESS) { // A new image is available if grab() returns SUCCESS
 
                              //Display a pixel color
                              zed.retrieveImage(image, VIEW::LEFT); // Get the left image
-                             sl::uchar4 centerRGB;
-                             image.getValue<sl::uchar4>(image.getWidth() / 2, image.getHeight() / 2, &centerRGB);
-                             std::cout << "Image " << i << " center pixel R:" << (int)centerRGB.r << " G:" << (int)centerRGB.g << " B:" << (int)centerRGB.b << std::endl;
+                             sl::uchar4 centerBGRA;
+                             image.getValue<sl::uchar4>(image.getWidth() / 2, image.getHeight() / 2, &centerBGRA);
+                             std::cout << "Image " << i << " center pixel B:" << (int)centerBGRA[0] << " G:" << (int)centerBGRA[1] << " R:" << (int)centerBGRA[2] << std::endl;
 
                              //Display a pixel depth
                              zed.retrieveMeasure(depth, MEASURE::DEPTH); // Get the depth map
@@ -6315,9 +6974,10 @@ namespace sl {
 
         If \ref open() wasn't called or failed, this function won't have any effects.
         \note If an asynchronous task is running within the \ref Camera object, like \ref saveAreaMap(), this function will wait for its completion.
-        \n The \ref open() function can then be called if needed.
+        \note To apply a new \ref InitParameters, you will need to close the camera first and then open it again with the new InitParameters values.
 
-        \warning If the CUDA context was created by \ref open(), this function will destroy it. Please make sure to delete your GPU \ref sl::Mat objects before the context is destroyed.
+        \warning If the CUDA context was created by \ref open(), this function will destroy it.
+        \n Therefore you need to make sure to delete your GPU \ref sl::Mat objects before the context is destroyed.
          */
         void close();
 
@@ -6378,15 +7038,35 @@ namespace sl {
         \param image_size : You can specify a size different from default image size to get the scaled camera information. default = (0,0) meaning original image size (given by \ref getCameraInformation().camera_configuration.resolution ).
         \return \ref CameraInformation containing the calibration parameters of the ZED, as well as serial number and firmware version.
 
-        \note The returned parameters might vary between two execution due to the \ref InitParameters.camera_disable_self_calib "self-calibration" being ran in the \ref open() method.
+          \note The CameraInformation will contain two types of calibration parameters:
+        - camera_configuration::calibration_parameters : it contains the calibration (single camera matrix, single distortion matrix, rotation/translation matrix between both eyes) for the <b>rectified</b> images.
+        Rectified images are images that would come from perfect stereo camera (exact same camera, perfectly matched).
+        Therefore, the camera matrix will be identical for Left and Right camera, and the distortion/rotation/translation matrix will be null (except for Tx, wich is the exact distance between both eyes).
+        - camera_configuration::calibration_parameters_raw : it contains the original calibration before rectification. Therefore it should be identical or very close to the calibration file SNXXXX.conf where XXXX is the serial number of the camera.
+
+        \note The returned camera_configuration::calibration_parameters might vary between two execution due to the \ref InitParameters.camera_disable_self_calib "self-calibration" being ran in the \ref open() method.
+
+        \note The calibration file SNXXXX.conf can be found in:
+        - C:/ProgramData/Stereolabs/settings/ (Windows)
+        - /usr/local/zed/settings/ (Linux)
+
          */
         CameraInformation getCameraInformation(Resolution image_size = Resolution(0, 0));
 
         /**
+        \brief Perform a new self calibration process.
+        
+        In some cases, due to temperature changes or strong vibrations, the stereo calibration becomes less accurate.
+        Use this function to update the self-calibration data and get more reliable depth values.
+        \note The self calibration will occur at the next \ref grab() call.
+        \note This function is similar to the previous resetSelfCalibration() used in 2.X SDK versions.
+        \warning New values will then be available in \ref getCameraInformation(), be sure to get them to still have consistent 2D <-> 3D conversion.
+         */
+        void updateSelfCalibration();
+
+        /**
         \brief Gets the Camera-created CUDA context for sharing it with other CUDA-capable libraries. This can be useful for sharing GPU memories.
-
         If you're looking for the opposite mechanism, where an existing CUDA context is given to the \ref Camera, please check \ref InitParameters.sdk_cuda_ctx
-
         \return The CUDA context used for GPU calls.
          */
         CUcontext getCUDAContext();
@@ -6404,6 +7084,9 @@ namespace sl {
         \n Available images and views are listed \ref VIEW "here".
         \n As an example, \ref VIEW "VIEW::DEPTH" can be used to get a gray-scale version of the depth map, but the actual depth values can be retrieved using \ref retrieveMeasure().
         \n
+        \n <b>Pixels</b>
+        \n Most VIEW modes output image with 4 channels as BGRA (Blue, Green, Red, Alpha), for more information see enum \ref VIEW
+        \n
         \n <b>Memory</b>
         \n By default, images are copied from GPU memory to CPU memory (RAM) when this function is called.
         \n If your application can use GPU images, using the <b>type</b> parameter can increase performance by avoiding this copy.
@@ -6413,11 +7096,13 @@ namespace sl {
         \n By default, images are returned in the resolution provided by \ref getCameraInformation().camera_configuration.resolution.
         \n However, you can request custom resolutions. For example, requesting a smaller image can help you speed up your application.
 
-        \param mat : \b [out] the \ref Mat to store the image.
-        \param view  : defines the image you want (see \ref VIEW). default : \ref VIEW "VIEW::LEFT".
+        \warning A sl::Mat resolution higher than the camera resolution <b>cannot</b> be requested.
+
+        \param mat  : the \ref Mat to store the image. The function will create the Mat if necessary at the proper resolution. If already created, it will just update its data (CPU or GPU depending on the MEM_TYPE).
+        \param view : defines the image you want (see \ref VIEW). default : \ref VIEW "VIEW::LEFT".
         \param type : whether the image should be provided in CPU or GPU memory. default : \ref MEM "MEM::CPU."
         \param image_size : if specified, define the resolution of the output mat. If set to \ref Resolution "Resolution(0,0)" , the ZED resolution will be taken. default : (0,0).
-        \return \ref "SUCCESS" if the method succeeded,
+        \return \ref ERROR_CODE::SUCCESS if the method succeeded,
                 \ref ERROR_CODE "ERROR_CODE::INVALID_FUNCTION_PARAMETERS" if the view mode requires a module not enabled (VIEW::DEPTH with DEPTH_MODE::NONE for example),
                 \ref ERROR_CODE "ERROR_CODE::INVALID_RESOLUTION" if the width/height is higher than the input resolution (width,height) or the side by side input resolution (width x 2,height) for side by side view mode,
                 \ref ERROR_CODE "ERROR_CODE::FAILURE" if another error occurred.
@@ -6425,21 +7110,16 @@ namespace sl {
         \note As this function retrieves the images grabbed by the \ref grab() function, it should be called afterward.
 
         \code
-        Mat leftImage, depthView; //create sl::Mat objects to store the images
+        Mat leftImage; //create sl::Mat objects to store the image
         while (true) {
         // Grab an image
                 if (zed.grab() == SUCCESS) { // A new image is available if grab() returns SUCCESS
                         zed.retrieveImage(leftImage, VIEW::LEFT); // Get the rectified left image
-                        zed.retrieveImage(depthView, VIEW::DEPTH); // Get a grayscale preview of the depth map
-
+                        
                         //Display the center pixel colors
                         sl::uchar4 leftCenter;
                         leftImage.getValue<sl::uchar4>(leftImage.getWidth() / 2, leftImage.getHeight() / 2, &leftCenter);
-                        std::cout << "leftImage center pixel R:" << (int)leftCenter.r << " G:" << (int)leftCenter.g << " B:" << (int)leftCenter.b << std::endl;
-
-                        sl::uchar4 depthCenter;
-                        depthView.getValue<sl::uchar4>(depthView.getWidth() / 2, depthView.getHeight() / 2, &depthCenter);
-                        std::cout << "depthView center pixel R:" << (int)depthCenter.r << " G:" << (int)depthCenter.g << " B:" << (int)depthCenter.b << std::endl;
+                        std::cout << "left image color B:" << (int)leftCenter[0] << " G:" << (int)leftCenter[1] << " R:" << (int)leftCenter[2] << std::endl;
                 }
         }
         \endcode
@@ -6459,18 +7139,18 @@ namespace sl {
         std::cout << "Current gain value: " << gain << std::endl;
         \endcode
 
-        \note Works only if the camera is open in live mode. (Settings aren't exported in the SVO file format)
+        \note Works only if the camera is open in LIVE or STREAM mode. (Settings aren't exported in the SVO file format)
          */
         int getCameraSettings(VIDEO_SETTINGS settings);
 
         /**
-        \brief Overloaded function for @VIDEO_SETTINGS::AEC_AGC_ROI which takes a Rect as parameter
+        \brief Overloaded function for \ref VIDEO_SETTINGS::AEC_AGC_ROI which takes a Rect as parameter
 
-        \param setting : must be set at @VIDEO_SETTINGS::AEC_AGC_ROI, otherwise the function will have no impact.
-        \param [out] roi : Rect that defines the current target applied for AEC/AGC.
-        \return @ERROR_CODE::SUCCESS if ROI has been applied. Other @ERROR_CODE otherwise.
+        \param setting : must be set at \ref VIDEO_SETTINGS::AEC_AGC_ROI, otherwise the function will have no impact.
+        \param roi : Rect that defines the current target applied for AEC/AGC.
+        \return \ref ERROR_CODE::SUCCESS if ROI has been applied. Other \ref ERROR_CODE otherwise.
 
-        \note Works only if the camera is open in live mode with @VIDEO_SETTINGS::AEC_AGC_ROI. It will return @ERROR_CODE::INVALID_FUNCTION_CALL or @ERROR_CODE::INVALID_FUNCTION_PARAMETERS otherwise.
+        \note Works only if the camera is open in LIVE or STREAM mode with \ref VIDEO_SETTINGS::AEC_AGC_ROI. It will return \ref ERROR_CODE::INVALID_FUNCTION_CALL or \ref ERROR_CODE::INVALID_FUNCTION_PARAMETERS otherwise.
          */
         ERROR_CODE getCameraSettings(VIDEO_SETTINGS settings, Rect& roi, sl::SIDE side = sl::SIDE::BOTH);
 
@@ -6489,31 +7169,25 @@ namespace sl {
 
         \warning Setting \ref VIDEO_SETTINGS::EXPOSURE or \ref VIDEO_SETTINGS::GAIN to default will automatically sets the other to default.
 
-        \note Works only if the camera is open in live mode.
+        \note Works only if the camera is open in LIVE or STREAM mode.
          */
         void setCameraSettings(VIDEO_SETTINGS settings, int value = VIDEO_SETTINGS_VALUE_AUTO);
 
-
         /**
-        \brief Overloaded function for @VIDEO_SETTINGS::AEC_AGC_ROI which takes a Rect as parameter
+        \brief Overloaded function for \ref VIDEO_SETTINGS::AEC_AGC_ROI which takes a Rect as parameter
 
-        \param setting : must be set at @VIDEO_SETTINGS::AEC_AGC_ROI, otherwise the function will have no impact.
+        \param setting : must be set at \ref VIDEO_SETTINGS::AEC_AGC_ROI, otherwise the function will have no impact.
         \param roi : Rect that defines the target to be applied for AEC/AGC computation. Must be given according to camera resolution.
-        \return @ERROR_CODE::SUCCESS if ROI has been applied. Other @ERROR_CODE otherwise.
+        \return \ref ERROR_CODE::SUCCESS if ROI has been applied. Other \ref ERROR_CODE otherwise.
 
-        \note Works only if the camera is open in live mode with @VIDEO_SETTINGS::AEC_AGC_ROI. It will return @ERROR_CODE::INVALID_FUNCTION_CALL or @ERROR_CODE::INVALID_FUNCTION_PARAMETERS otherwise.
+        \note Works only if the camera is open in LIVE or STREAM mode with \ref VIDEO_SETTINGS::AEC_AGC_ROI. It will return \ref ERROR_CODE::INVALID_FUNCTION_CALL or \ref ERROR_CODE::INVALID_FUNCTION_PARAMETERS otherwise.
          */
         ERROR_CODE setCameraSettings(VIDEO_SETTINGS settings, Rect roi, sl::SIDE side = sl::SIDE::BOTH, bool reset = false);
 
-
-
         /**
         \brief Returns the current framerate at which the \ref grab() method is successfully called.
-
         The returned value is based on the difference of camera \ref getTimestamp() "timestamps" between two successful grab() calls.
-
         \return The current SDK framerate
-
         \warning The returned framerate (number of images grabbed per second) can be lower than \ref InitParameters.camera_fps if the \ref grab() function runs slower than the image stream or is called too often.
 
         \code
@@ -6527,7 +7201,7 @@ namespace sl {
         \brief Returns the timestamp in the requested \ref TIME_REFERENCE.
 
         - When requesting the \ref TIME_REFERENCE "TIME_REFERENCE::IMAGE" timestamp, the UNIX nanosecond timestamp of the latest \ref grab() "grabbed" image will be returned.
-        \n This value corresponds to the time at which the entire image was available in the PC memory. As such, it ignores the communication time that corresponds to 2 or 3 frame-time based on the fps (ex: 33.3ms to 50ms at 60fps).
+        \n This value corresponds to the time at which the entire image was available in the PC memory. As such, it ignores the communication time that corresponds to 1 or 2 frame-time based on the fps (ex: 16.6ms to 33ms at 60fps).
 
         - When requesting the \ref TIME_REFERENCE "TIME_REFERENCE::CURRENT" timestamp, the current UNIX nanosecond timestamp is returned.
 
@@ -6659,8 +7333,10 @@ namespace sl {
         \n By default, measures are returned in the resolution provided by \ref getCameraInformation().camera_configuration.resolution .
         \n However, custom resolutions can be requested. For example, requesting a smaller measure can help you speed up your application.
 
+        \warning A sl::Mat resolution higher than the camera resolution <b>cannot</b> be requested.
 
-        \param mat : \b [out] the \ref Mat to store the measures.
+
+        \param mat  : the \ref Mat to store the measure. The function will create the Mat if necessary at the proper resolution. If already created, it will just update its data (CPU or GPU depending on the MEM_TYPE).
         \param measure : defines the measure you want. (see \ref MEASURE), default : \ref MEASURE "MEASURE::DEPTH"
         \param type : the type of the memory of provided mat that should by used. default : MEM::CPU.
         \param image_size : if specified, define the resolution of the output mat. If set to \ref Resolution "Resolution(0,0)" , the ZED resolution will be taken. default : (0,0).
@@ -6669,19 +7345,19 @@ namespace sl {
                 \ref ERROR_CODE "ERROR_CODE::INVALID_RESOLUTION" if the width/height is higher than camera.getCameraInformation().camera_configuration.resolution or camera.getCameraInformation().camera_configuration.resolution x 2 for side by side view mode,
                 \ref ERROR_CODE "ERROR_CODE::FAILURE" if another error occurred.
 
-        \note As this function retrieves the measures computed by the \ref grab() function, it should be called after.
+        \note As this function retrieves the measures computed by the \ref grab() function, This function should be called after a grab() call that returns SUCCESS.
         \n
         \n Measures containing "RIGHT" in their names, requires \ref InitParameters.enable_right_side_measure to be enabled.
 
         \code
-        Mat depthMap, pointCloud;
-                sl::Resolution resolution = zed.getCameraInformation().camera_configuration.resolution ;
+        Mat imageMap, depthMap, pointCloud;
+        sl::Resolution resolution = zed.getCameraInformation().camera_configuration.resolution ;
         int x = resolution.width / 2; // Center coordinates
         int y = resolution.height / 2;
 
         while (true) {
                 if (zed.grab() == SUCCESS) { // Grab an image
-
+                        zed.retrieveImage(imageMap,VIEW::LEFT); // Get the image if necessary
                         zed.retrieveMeasure(depthMap, MEASURE::DEPTH, MEM::CPU); // Get the depth map
                         // Read a depth value
                         float centerDepth = 0;
@@ -6690,8 +7366,7 @@ namespace sl {
                                 std::cout << "Depth value at center: " << centerDepth << " " << init_params.coordinate_units << std::endl;
                         }
 
-
-                        zed.retrieveMeasure(pointCloud, MEASURE::XYZRGBA, MEM::CPU);// Get the point cloud
+                        zed.retrieveMeasure(pointCloud, MEASURE::XYZBGRA, MEM::CPU);// Get the point cloud
                         // Read a point cloud value
                         sl::float4 pcValue;
                         pointCloud.getValue<sl::float4>(x, y, &pcValue); // each point cloud pixel contains 4 floats, so we are using a sl::float4
@@ -6699,7 +7374,7 @@ namespace sl {
                                 std::cout << "Point cloud coordinates at center: X=" << pcValue.x << ", Y=" << pcValue.y << ", Z=" << pcValue.z << std::endl;
                                 unsigned char color[sizeof(float)];
                                 memcpy(color, &pcValue[3], sizeof(float));
-                                std::cout << "Point cloud color at center: R=" << (int)color[0] << ", G=" << (int)color[1] << ", B=" << (int)color[2] << std::endl;
+                                std::cout << "Point cloud color at center: B=" << (int)color[0] << ", G=" << (int)color[1] << ", R=" << (int)color[2] << std::endl;
                         }
                 }
         }
@@ -6818,7 +7493,7 @@ namespace sl {
         \brief Saves the current area learning file. The file will contain spatial memory data generated by the tracking.
 
         If the tracking has been initialized with \ref PositionalTrackingParameters.enable_area_memory to true (default), the function allows you to export the spatial memory.
-        \n Reloading the exported file in a future session with \ref PositionalTrackingParameters.area_file_path initialize the tracking within the same referential.
+        \n Reloading the exported file in a future session with \ref PositionalTrackingParameters.area_file_path initializes the tracking within the same referential.
         \n This function is asynchronous, and only triggers the file generation. You can use \ref getAreaExportState() to get the export state.
         The positional tracking keeps running while exporting.
 
@@ -6867,7 +7542,7 @@ namespace sl {
         /**
         \brief Resets the tracking, and re-initializes the position with the given transformation matrix.
         \param path : Position of the camera in the world frame when the function is called. By default, it is set to identity.
-        \return \ref ERROR_CODE "ERROR_CODE::FAILURE" if the \ref area_file_path file wasn't found, \ref ERROR_CODE "SUCCESS" otherwise.
+        \return \ref ERROR_CODE "ERROR_CODE::SUCCESS" if the tracking has been reset, \ref ERROR_CODE::FAILURE otherwise.
 
         \note Please note that this function will also flush the accumulated or loaded spatial memory.
          */
@@ -6898,7 +7573,6 @@ namespace sl {
          */
         PositionalTrackingParameters getPositionalTrackingParameters();
 
-
         // -----------------------------------------------------------------
         //                        Sensors functions, for ZED2 and ZED-M only (using IMU)
         // -----------------------------------------------------------------
@@ -6918,14 +7592,13 @@ namespace sl {
         \n   <ul><li>\ref data.imu.angular_velocity, corresponding to the gyroscope</li>
         \n   <li>\ref data.imu.linear_acceleration, corresponding to the accelerometer</li></ul>
         \n both gyroscope and accelerometer are synchronized. The delta time between previous and current value can be calculated using <li>\ref data.imu.timestamp</li>
-
         \note : The IMU quaternion (fused data) is given in the specified COORDINATE_SYSTEM of InitParameters.
 
                 \return \ref ERROR_CODE::SUCCESS if sensors data have been extracted,
                 \ref ERROR_CODE::SENSORS_NOT_AVAILABLE if the camera model is a ZED,
                 \ref ERROR_CODE::MOTION_SENSORS_REQUIRED if the camera model is correct but the sensors module is not opened.
                 \ref ERROR_CODE::INVALID_FUNCTION_PARAMETERS if the reference_time is not valid. See Warning.
-        \warning : In SVO reading mode, the TIME_REFERENCE::CURRENT is currently not available (yielding \ref ERROR_CODE "ERROR_CODE::INVALID_FUNCTION_PARAMETERS".
+        \warning : In SVO or STREAM mode, the TIME_REFERENCE::CURRENT is currently not available (yielding \ref ERROR_CODE "ERROR_CODE::INVALID_FUNCTION_PARAMETERS".
          * Only the quaternion data and barometer data (if available) at TIME_REFERENCE::IMAGE are available. Other values will be set to 0.
          
                 \code
@@ -6957,10 +7630,10 @@ namespace sl {
 
         This function can be used to assist the positional tracking rotation while using a ZED Mini or a ZED 2.
 
-        \note This function is only effective if a ZED Mini (ZED-M) or a ZED 2 is used.
+        \note This function is only effective if a ZED-M or a ZED 2 is used.
         \n It needs to be called before the \ref grab() function.
         \param sl::Transform to be ingested into IMU fusion. Note that only the rotation is used.
-        \return SUCCESS if the transform has been passed, \ref ERROR_CODE "ERROR_CODE::INVALID_FUNCTION_CALL" otherwise (such as when use with the ZED camera due to its lack of an IMU).
+        \return SUCCESS if the transform has been passed, \ref ERROR_CODE "ERROR_CODE::INVALID_FUNCTION_CALL" otherwise (e.g. when used with a ZED camera which doesn't have IMU data).
          */
         ERROR_CODE setIMUPrior(const sl::Transform& transform);
 
@@ -6985,11 +7658,11 @@ namespace sl {
 
         \warning The tracking (\ref enablePositionalTracking() ) and the depth (\ref RuntimeParameters.enable_depth ) needs to be enabled to use the spatial mapping.
         \warning The performance greatly depends on the spatial_mapping_parameters.
-        \ Lower SpatialMappingParameters.range_meter and SpatialMappingParameters.resolution_meter for higher performance.
+        \warning Lower SpatialMappingParameters.range_meter and SpatialMappingParameters.resolution_meter for higher performance.
         If the mapping framerate is too slow in live mode, consider using an SVO file, or choose a lower mesh resolution.
 
-        \note This features uses host memory (RAM) to store the 3D map. The maximum amount of available memory allowed can be tweaked using the SpatialMappingParameters.
-        \n Exeeding the maximum memory allowed immediately stops the mapping.
+        \note This feature uses host memory (RAM) to store the 3D map. The maximum amount of available memory allowed can be tweaked using the SpatialMappingParameters.
+        \n Exceeding the maximum memory allowed immediately stops the mapping.
 
         \code
         #ifndef NDEBUG
@@ -7107,7 +7780,7 @@ namespace sl {
         ERROR_CODE getSpatialMapRequestStatusAsync();
 
         /**
-        \brief Retrieves the current generated spatial map.
+        \brief Retrieves the current generated spatial map only if \ref SpatialMappingParameters::map_type was set as SPATIAL_MAP_TYPE::MESH.
 
         After calling \ref requestSpatialMapAsync , this function allows you to retrieve the generated mesh. The mesh will only be available when \ref getMeshRequestStatusAsync() returns \ref ERROR_CODE "SUCCESS"
 
@@ -7116,21 +7789,21 @@ namespace sl {
 
         \note This function only updates the necessary chunks and adds the new ones in order to improve update speed.
         \warning You should not modify the mesh between two calls of this function, otherwise it can lead to corrupted mesh.
-
+        \warning If the SpatialMappingParameters::map_type has not been setup as SPATIAL_MAP_TYPE::MESH, the object will be empty.
         \n See \ref requestSpatialMapAsync() for an example.
          */
         ERROR_CODE retrieveSpatialMapAsync(Mesh& mesh);
 
         /**
-        \brief Retrieves the current generated spatial map.
-
+        \brief Retrieves the current generated spatial map only if \ref SpatialMappingParameters::map_type was set as SPATIAL_MAP_TYPE::FUSED_POINT_CLOUD.
         After calling \ref requestSpatialMapAsync , this function allows you to retrieve the generated fused point cloud. The fused point cloud will only be available when \ref getMeshRequestStatusAsync() returns \ref ERROR_CODE "SUCCESS"
 
-        \param fpc : \b [out] The fused point cloud to be filled with the generated spatial map.
+        \param fpc : \b The fused point cloud to be filled with the generated spatial map.
         \return \ref ERROR_CODE "SUCCESS" if the fused point cloud is retrieved, otherwise \ref ERROR_CODE "ERROR_CODE::FAILURE".
 
         \note This function only updates the necessary chunks and adds the new ones in order to improve update speed.
         \warning You should not modify the fused point cloud between two calls of this function, otherwise it can lead to a corrupted fused point cloud.
+        \warning If the SpatialMappingParameters::map_type has not been setup as SPATIAL_MAP_TYPE::FUSED_POINT_CLOUD, the object will be empty.
 
         \n See \ref requestSpatialMapAsync() for an example.
          */
@@ -7140,31 +7813,32 @@ namespace sl {
         // Blocking (synchronous) function of spatial map generation
         // -----------------------------------------------------------------
         /**
-        \brief Extracts the current spatial map from the spatial mapping process.
+        \brief Extracts the current spatial map from the spatial mapping process only if \ref SpatialMappingParameters::map_type was set as SPATIAL_MAP_TYPE::MESH.
 
         If the object to be filled already contains a previous version of the mesh, only changes will be updated, optimizing performance.
 
-        \param mesh : \b [out] The mesh to be filled with the generated spatial map.
-        \return \ref SUCCESS if the mesh is filled and available, otherwise \ref ERROR_CODE::FAILURE.
+        \param mesh : The mesh to be filled with the generated spatial map.
+        \return \ref ERROR_CODE "SUCCESS" if the mesh is filled and available, otherwise \ref ERROR_CODE "FAILURE".
 
         \warning This is a blocking function. You should either call it in a thread or at the end of the mapping process.
         \n The extraction can be long, calling this function in the grab loop will block the depth and tracking computation giving bad results.
 
+        \warning If the SpatialMappingParameters::map_type has not been setup as SPATIAL_MAP_TYPE::MESH, the object will be empty.
         \n See \ref enableSpatialMapping() for an example.
          */
         ERROR_CODE extractWholeSpatialMap(Mesh& mesh);
 
         /**
-        \brief Extracts the current spatial map from the spatial mapping process.
+        \brief Extracts the current spatial map from the spatial mapping process only if \ref SpatialMappingParameters::map_type was set as SPATIAL_MAP_TYPE::FUSED_POINT_CLOUD.
 
         If the object to be filled already contains a previous version of the fused point cloud, only changes will be updated, optimizing performance.
 
-        \param fpc : \b [out] The fused point cloud to be filled with the generated spatial map.
-        \return \ref SUCCESS if the fused point cloud is filled and available, otherwise \ref ERROR_CODE::FAILURE.
+        \param fpc : \b The fused point cloud to be filled with the generated spatial map.
+        \return \ref ERROR_CODE "SUCCESS" if the fused point cloud is filled and available, otherwise \ref ERROR_CODE "FAILURE".
 
         \warning This is a blocking function. You should either call it in a thread or at the end of the mapping process.
         \n The extraction can be long, calling this function in the grab loop will block the depth and tracking computation giving bad results.
-
+        \warning If the SpatialMappingParameters::map_type has not been setup as SPATIAL_MAP_TYPE::FUSED_POINT_CLOUD, the object will be empty.
         \n See \ref enableSpatialMapping() for an example.
          */
         ERROR_CODE extractWholeSpatialMap(FusedPointCloud& fpc);
@@ -7397,8 +8071,8 @@ namespace sl {
         \n Possible Error Code :
         \n * SUCCESS if streaming was successfully started
         \n * ERROR_CODE::INVALID_FUNCTION_CALL if open() was not successfully called before.
-        \n * ERROR_CODE::FAILURE if streaming RTSP protocol was not able to start.
-        \n * ERROR_CODE::NO_GPU_COMPATIBLE if streaming codec is not supported (in this case, use H264 codec).
+        \n * ERROR_CODE::FAILURE if streaming RTP protocol was not able to start.
+        \n * ERROR_CODE::NO_GPU_COMPATIBLE if streaming codec is not supported (in this case, use H264 codec which is supported on all NVIDIA GPU the sdk supports).
          */
         ERROR_CODE enableStreaming(StreamingParameters streaming_parameters = StreamingParameters());
 
@@ -7435,9 +8109,13 @@ namespace sl {
         // -----------------------------------------------------------------
 
         /**
-        \brief Initializes and starts the object detection module.
+        \brief Initializes and starts the Deep Learning detection module.
+        \n The object detection module currently supports two types of detection :
+        - Multiple class of objects with the \ref DETECTION_MODEL::MULTI_CLASS_BOX or \ref DETECTION_MODEL::MULTI_CLASS_BOX_ACCURATE.
+        The full list of detectable objects is available through \ref OBJECT_CLASS and \ref OBJECT_SUBCLASS.
+        - Human skeleton detection with the \ref DETECTION_MODEL::HUMAN_BODY_FAST or \ref DETECTION_MODEL::HUMAN_BODY_ACCURATE.
+        This model only detects humans but also provides a full skeleton map for each person.
 
-        The object detection module will detect and track vehicles and people in range of the camera, the full list of detectable objects is available in \ref OBJECT_CLASS.
 
         Detected objects can be retrieved using the \ref retrieveObjects() function.
 
@@ -7445,16 +8123,19 @@ namespace sl {
         - <b>Synchronous:</b> the \ref retrieveObjects() function will be blocking during the detection.
         - <b>Asynchronous:</b> the detection is running in the background, and \ref retrieveObjects() will immediately return the last objects detected.
 
+        \note - Only one detection model can be used at the time.
+        \note - <b>This Depth Learning detection module is only available for ZED2 cameras</b>
+        \note - This feature uses AI to locate objects and requires a powerful GPU. A GPU with at least 3GB of memory is recommended.
+
         \param object_detection_parameters : Structure containing all specific parameters for object detection.
         \n For more information, see the \ref ObjectDetectionParameters documentation.
         \return
-        \ref SUCCESS if everything went fine,
-        \ref ERROR_CODE::OBJECT_DETECTION_NOT_AVAILABLE if the AI model is missing or corrupted. In this case, the SDK needs to be reinstalled.
-        \ref ERROR_CODE::OBJECT_DETECTION_MODULE_NOT_COMPATIBLE_WITH_CAMERA if the camera used does not have a IMU (ZED Camera). the IMU gives the gravity vector that helps in the 3D box localization. Therefore the Object detection module is available only for ZED-M and ZED2 camera model.
-        \ref ERROR_CODE::SENSORS_NOT_DETECTED if the camera model is correct (ZED2) but the IMU is missing. It probably happens because InitParameters::disable_sensors was set to true.
-        \ref ERROR_CODE::INVALID_FUNCTION_CALL if one of the ObjectDetection parameter is not compatible with other modules parameters (For example, depth mode has been set to NONE).
-        \ref ERROR_CODE::FAILURE otherwise.
-        \note This feature uses AI to locate objects and requires a powerful GPU. A GPU with at least 3GB of memory is recommended.
+         - \ref ERROR_CODE::SUCCESS : if everything went fine.\n
+         - \ref ERROR_CODE::CORRUPTED_SDK_INSTALLATION : if the AI model is missing or corrupted. In this case, the SDK needs to be reinstalled.\n
+         - \ref ERROR_CODE::MODULE_NOT_COMPATIBLE_WITH_CAMERA : if the camera used does not have a IMU (ZED Camera). the IMU gives the gravity vector that helps in the 3D box localization. Therefore the Object detection module is available only for ZED-M and ZED2 camera model.\n
+         - \ref ERROR_CODE::MOTION_SENSORS_REQUIRED : if the camera model is correct (ZED2) but the IMU is missing. It probably happens because InitParameters::sensors_required was set to false and that IMU has not been found.\n
+         - \ref ERROR_CODE::INVALID_FUNCTION_CALL : if one of the ObjectDetection parameter is not compatible with other modules parameters (For example, depth mode has been set to NONE).\n
+         - \ref ERROR_CODE::FAILURE : otherwise.\n
 
         \code
         #include <sl/Camera.hpp>
@@ -7520,6 +8201,13 @@ namespace sl {
          */
         void disableObjectDetection();
 
+        /**
+        \brief Feed the 3D Object tracking function with your own 2D bounding boxes from your own detection algorithm.
+
+        \note The detection should be done on the current grabbed left image as the internal process will use all current available data to extract 3D informations and perform object tracking.
+         */
+        ERROR_CODE ingestCustomBoxObjects(std::vector<CustomBoxObjectData> &objects_in);
+
 
         /**
         \brief Retrieve objects detected by the object detection module
@@ -7531,8 +8219,8 @@ namespace sl {
 
         It is recommended to keep the same \ref Objects object as the input of all calls to this function. This will enable the identification and the tracking of every objects detected.
 
-        \param objects : [in,out] The detected objects will be saved into this object. If the object already contains data from a previous detection, it will be updated, keeping a unique ID for the same person.
-        \param parameters : [in] Object detection runtime settings, can be changed at each detection. In async mode, the parameters update is applied on the next iteration.
+        \param objects : The detected objects will be saved into this object. If the object already contains data from a previous detection, it will be updated, keeping a unique ID for the same person.
+        \param parameters : Object detection runtime settings, can be changed at each detection. In async mode, the parameters update is applied on the next iteration.
          *
         \return \ref SUCCESS if everything went fine, \ref ERROR_CODE::FAILURE otherwise
 
@@ -7551,6 +8239,34 @@ namespace sl {
          *
          */
         ERROR_CODE retrieveObjects(Objects &objects, ObjectDetectionRuntimeParameters parameters = ObjectDetectionRuntimeParameters());
+
+        /**
+        \brief Get a batch of detected objects.
+        \warning This function need to be called after retrieveObjects, otherwise trajectories will be empty.
+        This is the \ref retrieveObjects function that ingest the current/live objects into the batching queue.
+        \param trajectories as a std::vector of \ref sl::ObjectBatch, that will be filled by the batching queue process.
+        \note Most of the time, the vector will be empty and will be filled every \ref BatchParameters::latency.
+        \return  \ref ERROR_CODE::SUCCESS if everything went fine.
+        \return  \ref ERROR_CODE::INVALID_FUNCTION_CALL if batching module is not available (TensorRT!=7.1) or if object tracking was not enabled.
+        \code
+        Objects objects; // Unique Objects to be updated after each grab
+        // --- Main loop
+        while (true) {
+            if (zed.grab() == SUCCESS) { // Grab an image from the camera
+                   //Call retrieveObjects so that objects are ingested in the batching system
+                   zed.retrieveObjects(objects);
+
+                   // Get batch of objects
+                   std::vector<sl::ObjectsBatch> traj_;
+                   zed.getObjectsBatch(traj_);
+                   std::cout<<" Size of batch : "<<traj_.size()<<std::endl;
+
+                   // See zed-examples/object detection/birds eye viewer for a complete example.
+            }
+        }
+        \endcode
+         */
+        ERROR_CODE getObjectsBatch(std::vector<sl::ObjectsBatch>& trajectories);
 
         /**
         \brief Returns the object detection parameters used. Correspond to the structure send when the \ref enableObjectDetection() function was called.
@@ -7578,7 +8294,16 @@ namespace sl {
 
         /**
         \brief Returns the version of the currently installed ZED SDK.
-        \return The ZED SDK version
+        \param major : major int of the version filled
+        \param minor : minor int of the version filled
+        \param patch : patch int of the version filled
+
+        \code
+        int mj_v, mn_v,ptch_v;
+        Camera::getSDKVersion(mj_v,mn_v,ptch_v);
+        std::cout << "SDK Version v"<<mj_v<<"."<<mn_v<<"."<<ptch_v<<std::endl;
+        \endcode
+
          */
         static void getSDKVersion(int &major, int &minor, int &patch);
 
@@ -7589,7 +8314,7 @@ namespace sl {
 
         \return The device properties for each connected camera
 
-        \warning As this function returns an std::vector, it is only safe to use in Release mode (not Debug).
+        \warning As this function returns an std::vector, it is only safe to use in Release or ReleaseWithDebugInfos mode (not Debug).
         \n This is due to a known compatibility issue between release (the SDK) and debug (your app) implementations of std::vector.
 
          */
@@ -7600,9 +8325,8 @@ namespace sl {
 
         \return The streaming properties for each connected camera
 
-        \warning As this function returns an std::vector, it is only safe to use in Release mode (not Debug).
+        \warning As this function returns an std::vector, it is only safe to use in Release or ReleaseWithDebugInfos mode (not Debug).
         \n This is due to a known compatibility issue between release (the SDK) and debug (your app) implementations of std::vector.
-
         \warning This function takes around 2seconds to make sure all network informations has been captured. Make sure to run this function in a thread.
 
          */
@@ -7610,13 +8334,15 @@ namespace sl {
 
 
         /**
-        \brief Performs an hardware reset of the ZED 2.
-        \param Serial number of the camera to reset, or 0 to reset the first camera detected.
+        \brief Performs an hardware reset of the ZED 2 and the ZED2i.
+        \param sn : Serial number of the camera to reset, or 0 to reset the first camera detected.
+        \param fullReboot : Perform a full reboot (Sensors and Video modules) if true, otherwise only the Video module will be rebooted.
         \return \ref SUCCESS if everything went fine, \ref ERROR_CODE::CAMERA_NOT_DETECTED if no camera was detected, \ref ERROR_CODE::FAILURE  otherwise.
-        \note This function only works for ZED 2 cameras.
+        \note This function only works for ZED 2, ZED 2i, and newer camera models.
         \warning This function will invalidate any sl::Camera object, since the device is rebooting.
+        \warning Under Windows it is not possible to get exclusive access to HID devices, hence calling this function while the camera is opened by another process will cause it to freeze for a few seconds while the device is rebooting.
          */
-        static sl::ERROR_CODE reboot(int sn);
+        static sl::ERROR_CODE reboot(int sn, bool fullReboot=true);
 
         /**
         \brief The \ref Camera object cannot be copied. Therfore, its copy constructor is disabled.
