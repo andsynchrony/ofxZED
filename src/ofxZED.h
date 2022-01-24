@@ -105,6 +105,12 @@ namespace ofxZED
 		ofTexture& getDepthLeftTexture() { return depthLeftTexture; }
 		ofTexture& getDepthRightTexture() { return depthRightTexture; }
 
+		ofPixels& getColorLeftPixels() { return colorLeftPixels; }
+		ofPixels& getColorRightPixels() { return colorRightPixels; }
+		ofFloatPixels& getDepthLeftPixels() { return depthLeftPixels; }
+		ofFloatPixels& getDepthRightPixels() { return depthRightPixels; }
+
+
 		int zedWidth;
 		int zedHeight;
 
@@ -131,6 +137,11 @@ namespace ofxZED
 		ofTexture colorRightTexture;
 		ofTexture depthLeftTexture;
 		ofTexture depthRightTexture;
+
+		ofPixels colorLeftPixels;
+		ofPixels colorRightPixels;
+		ofFloatPixels depthLeftPixels;
+		ofFloatPixels depthRightPixels;
 
 		bool bRequestNewFrame = true;
 		bool bNewBuffer = false;

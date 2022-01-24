@@ -183,13 +183,17 @@ namespace ofxZED
 					{
 						auto ret = zed->retrieveImage(this->cl, sl::VIEW::LEFT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+							colorLeftPixels.setFromExternalPixels(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, 4);
+							colorLeftTexture.loadData(colorLeftPixels);
+							//colorLeftTexture.loadData(this->cl.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
 					{
 						auto ret = zed->retrieveImage(this->cr, sl::VIEW::RIGHT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
+							colorRightPixels.setFromExternalPixels(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, 4);
+							colorRightTexture.loadData(colorRightPixels);
+							//colorRightTexture.loadData(this->cr.getPtr<uint8_t>(), zedWidth, zedHeight, GL_RGBA);
 						}
 					}
 				}
@@ -198,9 +202,8 @@ namespace ofxZED
 					{
 						auto ret = zed->retrieveMeasure(this->dl, sl::MEASURE::DEPTH);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							ofFloatPixels tmp;
-							tmp.setFromExternalPixels(this->dl.getPtr<float>(), zedWidth, zedHeight, 1);
-							depthLeftTexture.loadData(tmp);
+							depthLeftPixels.setFromExternalPixels(this->dl.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthLeftTexture.loadData(depthLeftPixels);
 						}
 						else {
 							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
@@ -209,9 +212,8 @@ namespace ofxZED
 					{
 						auto ret = zed->retrieveMeasure(this->dr, sl::MEASURE::DEPTH_RIGHT);
 						if (ret == sl::ERROR_CODE::SUCCESS) {
-							ofFloatPixels tmp;
-							tmp.setFromExternalPixels(this->dr.getPtr<float>(), zedWidth, zedHeight, 1);
-							depthRightTexture.loadData(tmp);
+							depthRightPixels.setFromExternalPixels(this->dr.getPtr<float>(), zedWidth, zedHeight, 1);
+							depthRightTexture.loadData(depthRightPixels);
 						}
 						else {
 							ofLogError() << sl::errorCode2str(ret).c_str() << endl;
