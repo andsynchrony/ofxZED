@@ -97,7 +97,8 @@ namespace ofxZED
 			sl::RESOLUTION resolution = sl::RESOLUTION::HD720,
 			float fps = 0.0,
 			bool enableRightSideMeasure = true,
-			float minDepth = -1.0, float maxDepth = -1.0);
+			float minDepth = -1.0, float maxDepth = -1.0,
+			int sdkGpuId = 0);
 		void close();
 		void update();
 		ofVec2f getImageDimensions();

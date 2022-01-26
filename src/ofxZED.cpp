@@ -12,7 +12,7 @@ namespace ofxZED
 
 	void Camera::init(bool useColorImage, bool useDepthImage, bool useTracking, bool useSensor, 
 		int cameraID, sl::DEPTH_MODE mode, sl::RESOLUTION resolution, float fps,
-		bool enableRightSideMeasure, float minDepth, float maxDepth)
+		bool enableRightSideMeasure, float minDepth, float maxDepth, int sdkGpuId)
 	{
 		try
 		{
@@ -28,6 +28,7 @@ namespace ofxZED
 			init_params.sensors_required = bUseSensor;
 			init_params.depth_minimum_distance = minDepth;
 			init_params.depth_maximum_distance = maxDepth;
+			init_params.sdk_gpu_id = sdkGpuId;
 
 			bUseColorImage = useColorImage;
 			bUseDepthImage = useDepthImage;
