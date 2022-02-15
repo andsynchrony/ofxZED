@@ -32,40 +32,57 @@ namespace ofxZED
 
 			bUseColorImage = useColorImage;
 			bUseDepthImage = useDepthImage;
-			bUseTracking = useTracking;
-			bUseSensor = useSensor;
 			bEnableRightSideMeasure = enableRightSideMeasure;
+
+			if (bUseDepthImage)
+			{
+				rt.enable_depth = true;
+				rt.sensing_mode = sl::SENSING_MODE::FILL;
+			}
+			else if (bUseColorImage)
+			{
+				rt.enable_depth = false;
+			}
+
+			auto opened = this->open(init_params, rt);
+			if (!opened) {
+				return;
+			}
+
+			if (useTracking) {
+				this->enablePositionalTracking(sl::PositionalTrackingParameters());
+			}
+
+			if (useSensor) {
+				this->enableSensorThread();
+			}
+		}
+		catch (exception& err) {
+			cerr << err.what() << endl;
+		}
+	}
+
+	bool Camera::open(sl::InitParameters init_params, sl::RuntimeParameters runtime_params, bool bStartThread)
+	{
+		try
+		{
+			this->rt = runtime_params;
+			bEnableRightSideMeasure = init_params.enable_right_side_measure;
+			bUseDepthImage = rt.enable_depth;
 
 			ofLog() << "Initializing ZED camera." << std::endl;
 
 			zed = new sl::Camera();
-			ofLog() << "Resolution Mode:" << resolution << std::endl;
+			ofLog() << "Resolution Mode:" << init_params.camera_resolution << std::endl;
 
-			auto zederr = zed->open(init_params);
+			auto zedsuccess = handleZedResponse(zed->open(init_params));
 
-			if (zederr != sl::ERROR_CODE::SUCCESS)
-			{
+			if (!zedsuccess) {
 				close();
-				ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
-				return;
-			}
-			else
-			{
+				return false;
+			} else {
 				bZedReady = true;
 				ofLog() << "ZED initialized." << endl;
-			}
-
-			if (bUseTracking) {
-				// Enable positional tracking with default parameters
-				sl::PositionalTrackingParameters tracking_parameters;
-				zederr = zed->enablePositionalTracking(tracking_parameters);
-
-				if (zederr != sl::ERROR_CODE::SUCCESS)
-				{
-					close();
-					ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str() << endl;
-					return;
-				}
 			}
 
 			zedWidth = zed->getCameraInformation().camera_resolution.width;
@@ -78,26 +95,95 @@ namespace ofxZED
 			colorRightTexture.allocate(zedWidth, zedHeight, GL_RGBA);
 
 			bRequestNewFrame = true;
-			if (bUseDepthImage)
-			{
-				rt.enable_depth = true;
-				rt.sensing_mode = sl::SENSING_MODE::FILL;
-			}
-			else if (bUseColorImage)
-			{
-				rt.enable_depth = false;
-			}
-
-			startThread();
-
-			if (bUseSensor) {
-				sensorThread = make_shared<SensorThread>(this);
-				sensorThread->startThread();
+			if (bStartThread) {
+				startThread();
 			}
 		}
 		catch (exception& err) {
 			cerr << err.what() << endl;
+			return false;
 		}
+		return true;
+	}
+
+	void Camera::enablePositionalTracking(sl::PositionalTrackingParameters tracking_params)
+	{
+		bool thread = isThreadRunning();
+		if (thread) {
+			waitForThread(true);
+		}
+		bUseTracking = handleZedResponse(zed->enablePositionalTracking(tracking_params));
+		if (bUseTracking) {
+			ofLog() << "positional tracking enable success";
+		}
+		if (thread) {
+			startThread();
+		}
+	}
+
+	void Camera::enableSensorThread()
+	{
+		sensorThread = make_shared<SensorThread>(this);
+		sensorThread->startThread();
+		bUseSensor = true;
+	}
+
+	void Camera::enableObjectDetection(sl::ObjectDetectionParameters obj_det_params, sl::ObjectDetectionRuntimeParameters obj_det_params_rt)
+	{
+		bool thread = isThreadRunning();
+		if (thread) {
+			waitForThread(true);
+		}
+		bUseObjectDetection = handleZedResponse(zed->enableObjectDetection(obj_det_params));
+		if (bUseObjectDetection) {
+			this->objDetRtParams = obj_det_params_rt;
+			ofLog() << "object detection enable success";
+		}
+		if (thread) {
+			startThread();
+		}
+	}
+
+	void Camera::disablePositionalTracking()
+	{
+		if (bUseTracking) {
+			bool thread = isThreadRunning();
+			if (thread) {
+				waitForThread(true);
+			}
+			zed->disablePositionalTracking();
+			ofLog() << "positional tracking disable success";
+			if (thread) {
+				startThread();
+			}
+		}
+		bUseTracking = false;
+	}
+
+	void Camera::disableSensorThread()
+	{
+		if (bUseSensor) {
+			if (sensorThread && sensorThread->isThreadRunning()) {
+				sensorThread->waitForThread();
+				sensorThread.reset();
+			}
+		}
+	}
+
+	void Camera::disableObjectDetection()
+	{
+		if (bUseObjectDetection) {
+			bool thread = isThreadRunning();
+			if (thread) {
+				waitForThread(true);
+			}
+			zed->disableObjectDetection();
+			ofLog() << "object detection disable success";
+			if (thread) {
+				startThread();
+			}
+		}
+		bUseObjectDetection = false;
 	}
 
 	void Camera::close()
@@ -106,18 +192,12 @@ namespace ofxZED
 			waitForThread(true);
 
 		}
-		if (bUseSensor) {
-			if (sensorThread && sensorThread->isThreadRunning()) {
-				sensorThread->waitForThread();
-				sensorThread.reset();
-			}
-		}
-
 		if (zed) {
-			if (bUseTracking) {
-				zed->disablePositionalTracking();
-			}
+			disableSensorThread();
+			disableObjectDetection();
+			disablePositionalTracking();
 			zed->close();
+			delete zed;
 			zed = nullptr;
 			bZedReady = false;
 		}
@@ -138,6 +218,86 @@ namespace ofxZED
 		rt.sensing_mode = mode;
 	}
 
+	void Camera::debugDrawObjectDetectionResult2D() const
+	{
+		for (const auto& object : this->objDetResult.object_list) {
+			stringstream ss;
+			ss << "ID : " << object.id << endl;
+			ss << "Label : " << object.label << endl;
+			ss << "SubLabel : " << object.sublabel << endl;
+			ss << "State : " << object.tracking_state << endl;
+			ss << "Conf : " << object.confidence;
+			if (object.bounding_box_2d.size() >= 4) {
+				auto lt = object.bounding_box_2d[0];
+				ofDrawBitmapStringHighlight(ss.str(), glm::vec2(lt.x, lt.y));
+				auto rb = object.bounding_box_2d[2];
+
+				ofPushStyle();
+				ofNoFill();
+				ofSetColor(0, 255, 0);
+				ofSetLineWidth(3);
+				ofDrawRectangle(lt.x, lt.y, (rb.x - lt.x), (rb.y - lt.y));
+				ofPopStyle();
+			}
+
+			if (object.keypoint_2d.size() == 18) {
+				ofPushStyle();
+				ofSetColor(255, 0, 0);
+				ofSetLineWidth(3);
+				for (int i = 0; i < BODY18_CONNECTIONS.size(); i += 2) {
+					auto idx1 = BODY18_CONNECTIONS[i];
+					auto idx2 = BODY18_CONNECTIONS[i+1];
+					auto conf1 = object.keypoint_confidence[idx1];
+					auto conf2 = object.keypoint_confidence[idx2];
+					auto pt1 = toOf(object.keypoint_2d[idx1]);
+					auto pt2 = toOf(object.keypoint_2d[idx2]);
+					if (conf1 > 0.2 && conf2 > 0.2 && pt1.lengthSquared() > 0.0 && pt2.lengthSquared() > 0.0) {
+						ofDrawLine(pt1, pt2);
+					}
+				}
+				ofPopStyle();
+			}
+			ofPushStyle();
+			ofSetColor(128, 255, 0);
+			for (const auto& kp2d : object.keypoint_2d) {
+				ofDrawSphere(kp2d.x, kp2d.y, 3);
+			}
+			ofPopStyle();
+
+		}
+	}
+
+	void Camera::debugDrawObjectDetectionResult3D() const
+	{
+		ofPushStyle();
+		ofSetColor(255, 0, 255);
+		for (const auto& object : this->objDetResult.object_list) {
+			if (object.keypoint.size() == 18) {
+				ofPushStyle();
+				ofSetColor(255, 0, 255);
+				ofSetLineWidth(3);
+				for (int i = 0; i < BODY18_CONNECTIONS.size(); i += 2) {
+					auto idx1 = BODY18_CONNECTIONS[i];
+					auto idx2 = BODY18_CONNECTIONS[i + 1];
+					auto conf1 = object.keypoint_confidence[idx1];
+					auto conf2 = object.keypoint_confidence[idx2];
+					auto pt1 = toOf(object.keypoint[idx1]);
+					auto pt2 = toOf(object.keypoint[idx2]);
+					if (conf1 > 0.2 && conf2 > 0.2 && pt1.lengthSquared() > 0.0 && pt2.lengthSquared() > 0.0) {
+						ofDrawLine(pt1, pt2);
+					}
+				}
+				ofPopStyle();
+			}
+			ofPushStyle();
+			ofSetColor(0, 255, 255);
+			for (const auto& kp : object.keypoint) {
+				ofDrawSphere(toOf(kp), 0.01);
+			}
+			ofPopStyle();
+		}
+	}
+
 	void Camera::threadedFunction()
 	{
 		while (isThreadRunning()) {
@@ -153,12 +313,10 @@ namespace ofxZED
 					}
 					else if (zederr == sl::ERROR_CODE::SUCCESS) {
 						cameraTimestampBack = zed->getTimestamp(sl::TIME_REFERENCE::IMAGE);
-
-						if (bUseTracking) {
-							trackingState = zed->getPosition(pose);
-						}
-						else {
-							trackingState = sl::POSITIONAL_TRACKING_STATE::OFF;
+						trackingState = bUseTracking ? zed->getPosition(poseBack) : sl::POSITIONAL_TRACKING_STATE::OFF;
+						
+						if (bUseObjectDetection) {
+							zed->retrieveObjects(objDetResultBack, objDetRtParams);
 						}
 
 						bNewBuffer = true;
@@ -228,6 +386,19 @@ namespace ofxZED
 						}
 					}
 				}
+
+				if (bUseTracking) {
+					std::swap(pose, poseBack);
+				} else {
+					pose = sl::Pose();
+				}
+
+				if (bUseObjectDetection) {
+					std::swap(objDetResult, objDetResultBack);
+				} else {
+					objDetResult = sl::Objects();
+				}
+
 				cameraTimestamp = cameraTimestampBack;
 				unlock();
 				bNewBuffer = false;
@@ -239,23 +410,14 @@ namespace ofxZED
 
 		if (bUseSensor) {
 			sensorThread->update(imu);
-			//if (ofGetFrameNum() % 60 == 0 && imu.size()) {
-			//	cerr << "[GLThread] " << imu.size() << "imu samples ";
-			//	cerr << ", ts: " << imu.back().timestamp.data_ns;
-			//	cerr << ", hz: " << imu.back().effective_rate;
-			//	cerr << ", gyro: " << imu.back().angular_velocity << endl;
-			//	auto pos = toOf(imu.back().pose).getTranslation();
-			//	cerr << pos << endl;
-			//}
 		}
-
 	}
-	Camera::SensorThread::SensorThread(Camera * parent)
-	{
+
+	Camera::SensorThread::SensorThread(Camera * parent) {
 		this->parent_ = parent;
 	}
-	void Camera::SensorThread::threadedFunction()
-	{
+	
+	void Camera::SensorThread::threadedFunction() {
 		uint64_t sensorCount = 0;
 		while (isThreadRunning()) {
 			sl::ERROR_CODE zederr = sl::ERROR_CODE::SUCCESS;

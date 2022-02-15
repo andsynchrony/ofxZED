@@ -31,9 +31,34 @@ void main()
 //--------------------------------------------------------------
 void ofApp::setup()
 {
-	ofSetFrameRate(60);
+	ofSetFrameRate(0);
 
-	zed.init(true, true, true, true, 0, sl::DEPTH_MODE::PERFORMANCE, sl::RESOLUTION::HD720, 0.0);
+	//zed.init(true, true, false, false, 0, sl::DEPTH_MODE::PERFORMANCE, sl::RESOLUTION::HD720, 0.0);
+	//zed.init(true, true, false, false, 0, sl::DEPTH_MODE::NONE, sl::RESOLUTION::VGA, 100.0);
+	sl::InitParameters init_params;
+	init_params.camera_resolution = sl::RESOLUTION::HD720;
+	init_params.camera_fps = 60;
+	init_params.depth_mode = sl::DEPTH_MODE::PERFORMANCE;
+	init_params.coordinate_units = sl::UNIT::METER;
+	init_params.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
+	init_params.input.setFromCameraID(0);
+	init_params.enable_right_side_measure = true;
+	init_params.sdk_verbose = 10;
+
+	sl::RuntimeParameters runtime_params;
+	runtime_params.enable_depth = true;
+	runtime_params.sensing_mode = sl::SENSING_MODE::FILL;
+	if (zed.open(init_params, runtime_params)) {
+		sl::PositionalTrackingParameters pt_params;
+		pt_params.set_as_static = true;
+		zed.enablePositionalTracking(pt_params);
+
+		sl::ObjectDetectionParameters obj_det_params;
+		obj_det_params.detection_model = sl::DETECTION_MODEL::HUMAN_BODY_ACCURATE;
+		obj_det_params.body_format = sl::BODY_FORMAT::POSE_18;
+		sl::ObjectDetectionRuntimeParameters obj_det_params_rt;
+		zed.enableObjectDetection(obj_det_params, obj_det_params_rt);
+	}
 
 	depthShader.setupShaderFromSource(GL_FRAGMENT_SHADER, depthFragmentShader);
 	depthShader.linkProgram();
@@ -61,12 +86,19 @@ void ofApp::draw()
 	zed.getDepthRightTexture().draw(zed.zedWidth, zed.zedHeight);
 	depthShader.end();
 
+	zed.debugDrawObjectDetectionResult2D();
+
 	cam.begin();
 	ofPushMatrix();
 	ofScale(100, 100, 100);
+
+	ofPushMatrix();
 	ofMultMatrix(zed.getTrackedPose());
 	ofDrawAxis(0.3);
 	ofDrawBox(0.1);
+	ofPopMatrix();
+
+	zed.debugDrawObjectDetectionResult3D();
 	ofPopMatrix();
 
 	ofDrawAxis(100);
@@ -85,7 +117,15 @@ void ofApp::draw()
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	if (key == 'd') {
+		zed.disableObjectDetection();
+	}
+	if (key == 'e') {
+		sl::ObjectDetectionParameters obj_det_params;
+		obj_det_params.detection_model = sl::DETECTION_MODEL::HUMAN_BODY_FAST;
+		sl::ObjectDetectionRuntimeParameters obj_det_params_rt;
+		zed.enableObjectDetection(obj_det_params, obj_det_params_rt);
+	}
 }
 
 //--------------------------------------------------------------

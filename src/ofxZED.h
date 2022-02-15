@@ -77,6 +77,7 @@ namespace ofxZED
 		return sl::Orientation(sl::float4(v.x(), v.y(), v.z(), v.w()));
 	}
 
+	static constexpr std::array<int, 34> BODY18_CONNECTIONS = {0,1,1,2,2,3,3,4,1,5,5,6,6,7,1,8,8,9,9,10,1,11,11,12,12,13,0,14,14,16,0,15,15,17};
 
 	class MR;
 
@@ -87,6 +88,8 @@ namespace ofxZED
 
 		Camera();
 		~Camera();
+		
+		// for backward compatibility
 		void init(
 			bool useColorImage = true, 
 			bool useDepthImage = true, 
@@ -99,6 +102,22 @@ namespace ofxZED
 			bool enableRightSideMeasure = true,
 			float minDepth = -1.0, float maxDepth = -1.0,
 			int sdkGpuId = 0);
+
+		// advanced open
+		bool open(
+			sl::InitParameters init_params,
+			sl::RuntimeParameters runtime_params,
+			bool bStartThread = true);
+		void enablePositionalTracking(sl::PositionalTrackingParameters tracking_params);
+		void enableSensorThread();
+		void enableObjectDetection(
+			sl::ObjectDetectionParameters obj_det_params,
+			sl::ObjectDetectionRuntimeParameters obj_det_params_rt);
+
+		void disablePositionalTracking();
+		void disableSensorThread();
+		void disableObjectDetection();
+
 		void close();
 		void update();
 		ofVec2f getImageDimensions();
@@ -113,7 +132,6 @@ namespace ofxZED
 		ofFloatPixels& getDepthLeftPixels() { return depthLeftPixels; }
 		ofFloatPixels& getDepthRightPixels() { return depthRightPixels; }
 
-
 		int zedWidth;
 		int zedHeight;
 
@@ -123,16 +141,24 @@ namespace ofxZED
 		sl::Camera* getZedCamera() { return zed; }
 
 		ofMatrix4x4 getTrackedPose() const { return toOf(pose); }
+		const sl::Objects& getObjectDetectionResult() const { return objDetResult; }
 
 		void setSensingMode(sl::SENSING_MODE mode);
-	public:
+		sl::RuntimeParameters& getRuntimeParams() { return rt; }
+		sl::ObjectDetectionRuntimeParameters& getObjectDetectionRuntimeParams() { return objDetRtParams; }
+		void setEnableUpdateColorImage(bool b) { bUseColorImage = b; }
+
+		void debugDrawObjectDetectionResult2D() const;
+		void debugDrawObjectDetectionResult3D() const;
+	protected:
 		void threadedFunction() override;
 
 		sl::Mat cl, cr, dl, dr;
 
-		bool bUseColorImage = false;
-		bool bUseDepthImage = false;
+		bool bUseColorImage = true;
+		bool bUseDepthImage = true;
 		bool bUseTracking = false;
+		bool bUseObjectDetection = false;
 		bool bUseSensor = false;
 		bool bEnableRightSideMeasure = false;
 		bool bNewFrame = false;
@@ -158,6 +184,7 @@ namespace ofxZED
 		sl::Timestamp cameraTimestampBack;
 		sl::Timestamp cameraTimestamp;
 		sl::POSITIONAL_TRACKING_STATE trackingState;
+		sl::Pose poseBack;
 		sl::Pose pose;
 
 		class SensorThread : public ofThread
@@ -173,6 +200,19 @@ namespace ofxZED
 		shared_ptr<SensorThread> sensorThread;
 
 		vector<sl::SensorsData::IMUData> imu;
+
+		sl::ObjectDetectionRuntimeParameters objDetRtParams;
+		sl::Objects objDetResultBack;
+		sl::Objects objDetResult;
+		
+
+		bool handleZedResponse(sl::ERROR_CODE zederr) {
+			auto success = zederr == sl::ERROR_CODE::SUCCESS;
+			if (!success) {
+				ofLog() << "ERROR: " << sl::errorCode2str(zederr).c_str();
+			}
+			return success;
+		}
 	};
 }
 
