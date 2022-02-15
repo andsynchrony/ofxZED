@@ -11,8 +11,8 @@
     <PropertyGroup>
         <CudaToolkitDir Condition="'$(CudaToolkitDir)' == ''">$(CudaToolkitCustomDir)</CudaToolkitDir>
         <CudToolkitMajorVersion>11</CudToolkitMajorVersion>
-        <CudaToolkitMinorVersion>4</CudaToolkitMinorVersion>
-        <CudaToolkitVersionedPath>$(CUDA_PATH_V11_4)</CudaToolkitVersionedPath>
+        <CudaToolkitMinorVersion>5</CudaToolkitMinorVersion>
+        <CudaToolkitVersionedPath>$(CUDA_PATH_V11_5)</CudaToolkitVersionedPath>
 
         <CudaToolkitVersion>v$(CudToolkitMajorVersion).$(CudaToolkitMinorVersion)</CudaToolkitVersion>
         <CudaToolkitFullVersion>$(CudToolkitMajorVersion).$(CudaToolkitMinorVersion).0000.0000</CudaToolkitFullVersion>
@@ -152,7 +152,7 @@
             <CleanCommandLineTemplate>-clean</CleanCommandLineTemplate>
             <HostCommandLineTemplate>-Xcompiler &quot;/EHsc [Warning] /nologo [Optimization] [ProgramDataBaseFileName] $(CudaForceSynchronousPdbWrites) [DebugInformationFormat] [RuntimeChecks] [Runtime] [TypeInfo]&quot;</HostCommandLineTemplate>
 
-            <DriverApiCommandLineTemplate>%(BaseCommandLineTemplate) [CompileOut] "%(FullPath)"</DriverApiCommandLineTemplate>
+            <DriverApiCommandLineTemplate>%(BaseCommandLineTemplate) [Defines] [CompileOut] "%(FullPath)"</DriverApiCommandLineTemplate>
             <RuntimeApiCommandLineTemplate>%(BaseCommandLineTemplate) [HostDebugInfo] [Emulation] [Defines] %(HostCommandLineTemplate) [CompileOut] "%(FullPath)"</RuntimeApiCommandLineTemplate>
 
             <CommandLineTemplate>
