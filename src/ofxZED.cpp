@@ -296,6 +296,7 @@ namespace ofxZED
 			}
 			ofPopStyle();
 		}
+		ofPopStyle();
 	}
 
 	void Camera::threadedFunction()
