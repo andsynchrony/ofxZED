@@ -1,0 +1,33 @@
+SOFTWARE LICENSE
+BY USING YOUR CAMERA YOU AGREE TO THIS SOFTWARE LICENSE. BEFORE SETTING IT UP, PLEASE READ THIS SOFTWARE LICENSE CAREFULLY. IF YOU DO NOT ACCEPT THIS SOFTWARE LICENSE, DO NOT USE YOUR CAMERA. RETURN IT TO UNUSED TO STEREOLABS FOR A REFUND. Contact STEREOLABS at support@stereolabs.com
+
+1.	Definitions
+
+"Authorized Accessory" means a STEREOLABS branded ZED, ZED 2 or ZED Mini, and a STEREOLABS licensed, third party branded, ZED hardware accessory whose packaging bears the official "Licensed for ZED" logo. The ZED camera, ZED 2 camera and the ZED Mini camera are Authorized Accessories solely for purpose of this Software license.
+"Software" means the Software Development Kit, available on the stereolabs.com website, and including any updates STEREOLABS may make available from time to time.
+"Unauthorized Accessories" means all hardware accessories other than an Authorized Accessory.
+"Unauthorized Software" means any software not distributed by STEREOLABS.
+"You" means the user of a ZED, ZED 2 or ZED Mini camera.
+
+2.	License
+
+a.	The Software is licensed to You, not sold. You are licensed to use the Software only as downloaded from the stereolabs.com website, and updated by STEREOLABS from time to time. You may not copy or reverse engineer the Software.
+b.	As conditions to this Software license, You agree that:
+	i.	You will use Your Software with ZED, ZED 2 or ZED Mini camera only and not with any other device (including). You will not use Unauthorized Accessories. They may not work or may stop working permanently after a Software update.
+	ii.	You will not use or install any Unauthorized Software with an Authorized Accessory. If You do, Your ZED, ZED 2 or ZED Mini camera may stop working permanently at that time or after a later Software update.
+	iii.	You will not attempt to defeat or circumvent any Software technical limitation, security, or anti-piracy system. If You do, Your ZED, ZED 2 or ZED Mini camera may stop working permanently at that time or after a later Software update.
+	iv.	STEREOLABS may use technical measures, including Software updates, to limit use of the Software to the ZED, ZED 2 or ZED Mini camera, to prevent use of Unauthorized Accessories, and to protect the technical limitations, security and anti-piracy systems in the ZED, ZED 2 or ZED Mini camera.
+	v.	STEREOLABS may update the Software from time to time without further notice to You, for example, to update any technical limitation, security, or anti-piracy system.
+
+3.	Warranty
+The Software is covered by the Limited Warranty for Your ZED, ZED 2 or ZED Mini camera, and STEREOLABS gives no other guarantee, warranty, or condition for the Software. No one else may give any guarantee, warranty, or condition on STEREOLABS's behalf.
+
+4.	EXCLUSION OF CERTAIN DAMAGES
+STEREOLABS IS NOT RESPONSIBLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES; ANY LOSS OF DATA, PRIVACY, CONFIDENTIALITY, OR PROFITS; OR ANY INABILITY TO USE THE SOFTWARE. THESE EXCLUSIONS APPLY EVEN IF STEREOLABS HAS BEEN ADVISED OF THE POSSIBILITY OF THESE DAMAGES, AND EVEN IF ANY REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
+
+5.	Choice of Law
+French law governs the interpretation of this Software license and any claim that STEREOLABS has breached it, regardless of conflict of law principles.
+
+
+
+If you are reading this file during the installation process, hit 'q' on your keyboard to close this view.
